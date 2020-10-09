@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Accountant.Configuration.Storage;
+
+using Newtonsoft.Json;
 
 using SharedUtils.Configuration;
 
@@ -15,6 +17,9 @@ namespace Accountant.Configuration
 
         [JsonProperty("allow-guests")]
         public bool AllowGuests;
+
+        [JsonProperty("storage", TypeNameHandling = TypeNameHandling.All)]
+        public StorageConfig Storage;
 
         public override void SetDefaults()
         {

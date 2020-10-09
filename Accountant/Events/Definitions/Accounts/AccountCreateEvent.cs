@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Accountant.Events
+namespace Accountant.Events.Definitions.Accounts
 {
-    public class EventManager
+    class AccountCreateEvent
     {
     }
 }
