@@ -77,7 +77,7 @@ namespace Accountant.Storage
                         string username = r.GetString(1);
                         string password = r.GetString(2);
 
-                        acc = new Account(this, id)
+                        acc = new Account(Manager, this, id)
                         {
                             Username = username,
                             Password = password
@@ -129,7 +129,7 @@ namespace Accountant.Storage
                         string username = r.GetString(1);
                         string password = r.GetString(2);
 
-                        acc = new Account(this, id)
+                        acc = new Account(Manager, this, id)
                         {
                             Username = username,
                             Password = password

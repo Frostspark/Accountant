@@ -86,7 +86,10 @@ namespace Accountant.Accounts
             AccountantPlugin.Server.Events.FireEvent(ade);
 
             if (ade.Cancelled)
+            {
+                refn.Dispose();
                 return AccountDeleteResult.PluginBlocked;
+            }
 
             var adresult = AccountDeleteResult.NotFound;
 

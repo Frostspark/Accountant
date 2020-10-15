@@ -12,10 +12,12 @@ namespace Accountant.Storage
     public abstract class StorageProvider
     {
         protected readonly AccountantPlugin Plugin;
+        protected readonly AccountManager Manager;
 
         internal StorageProvider(AccountantPlugin plugin, StorageConfig config)
         {
             Plugin = plugin;
+            Manager = plugin.Accounts;
         }
 
         /// <summary>
