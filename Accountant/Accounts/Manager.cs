@@ -23,7 +23,8 @@ namespace Accountant.Accounts
             Synchroniser = new ObjectSynchroniser<Obj>();
             References = new ReferenceManager<Obj>(Synchroniser)
             {
-
+                OnFirstReference = FirstReference,
+                OnUnReference = CleanupObject
             };
         }
 
@@ -131,6 +132,17 @@ namespace Accountant.Accounts
                     }
                 }
             }
+        }
+
+        private void FirstReference(Obj obj)
+        {
+            AccountantPlugin.Instance.Log.LogDebug($"Account {obj.Identifier} pinned.");
+        }
+
+        private void CleanupObject(Obj obj)
+        {
+            AccountantPlugin.Instance.Log.LogDebug($"Account {obj.Identifier} unloading...");
+            TryRemove(obj);
         }
 
     }

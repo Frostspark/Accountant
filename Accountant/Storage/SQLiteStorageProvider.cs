@@ -268,7 +268,7 @@ namespace Accountant.Storage
 
                 if (account.Identifier == -1)
                 {
-                    conn.RunNonQuery("INSERT INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password } });
+                    conn.RunNonQuery("INSERT OR IGNORE INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password } });
                     long last_id = -1;
                     conn.RunQuery("SELECT last_insert_rowid()", (r) =>
                     {
@@ -285,6 +285,9 @@ namespace Accountant.Storage
 
                     if (last_id == -1)
                         throw new InvalidOperationException("RunQuery did not run ReaderCallback.");
+
+                    if (last_id == 0)
+                        throw new EntryAlreadyExistsException("An account by this name already exists.");
 
                     account.Identifier = last_id;
                 }

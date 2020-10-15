@@ -1,6 +1,7 @@
 ﻿
 using Accountant.Accounts;
 using Accountant.Commands.Utilities;
+using Accountant.Events.Definitions.Players;
 using Accountant.Extensions;
 
 using BCrypt.Net;
@@ -16,6 +17,7 @@ using SharedUtils.Storage.Exceptions;
 
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication.ExtendedProtection;
 using System.Text;
 
 namespace Accountant.Commands.Implementations
@@ -31,9 +33,7 @@ namespace Accountant.Commands.Implementations
                 return;
 
             if (!SessionUtilities.AcquireSession(ply, out var session))
-            {
                 return;
-            }
 
             if (session.Authenticated)
             {
@@ -58,7 +58,7 @@ namespace Accountant.Commands.Implementations
             //Ensure the UUID is correctly cased.
             uuid = guid.ToString();
 
-            if(!FindAccount(ply.Name, out var refn))
+            if(!AccountUtilities.TryFindAccount(ply.Name, out var refn))
             {
                 ply.SendErrorMessage($"This account currently is not registered. Please use /register in order to claim it.");
                 return;
@@ -93,9 +93,7 @@ namespace Accountant.Commands.Implementations
                 return;
 
             if (!SessionUtilities.AcquireSession(ply, out var session))
-            {
                 return;
-            }
 
             if (session.Authenticated)
             {
@@ -103,7 +101,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (!FindAccount(ply.Name, out var refn))
+            if (!AccountUtilities.TryFindAccount(ply.Name, out var refn))
             {
                 ply.SendErrorMessage($"This account is not currently registered. Please use /register in order to claim it.");
                 return;
@@ -141,7 +139,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (!FindAccount(username, out var refn))
+            if (!AccountUtilities.TryFindAccount(username, out var refn))
             {
                 ply.SendErrorMessage($"This account is not currently registered. Please use /register in order to claim it.");
                 return;
@@ -157,27 +155,21 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                session.Account = refn;
-                ply.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-                acc.UpdateLogonTime();
+                PlayerLoginEvent ple = new PlayerLoginEvent(ply, AccountantPlugin.Server, acc);
+                AccountantPlugin.Server.Events.FireEvent(ple);
+
+                if (!ple.Cancelled)
+                {
+                    session.Account = refn;
+                    ply.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
+                    acc.UpdateLogonTime();
+                }
+                else
+                {
+                    ply.SendErrorMessage($"Account logon denied by another plugin.");
+                }
             }
 
-        }
-
-        private bool FindAccount(string name, out ObjectReference<Account> refn)
-        {
-            refn = null;
-
-            try
-            {
-                refn = AccountantPlugin.Instance.Accounts.GetAccountByUsername(name);
-
-                return true;
-            }
-            catch (EntryNotFoundException)
-            {
-                return false;
-            }
         }
     }
 }

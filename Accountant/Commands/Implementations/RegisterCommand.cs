@@ -1,5 +1,7 @@
 ﻿
 using Accountant.Accounts;
+using Accountant.Accounts.Enums;
+using Accountant.Commands.Utilities;
 using Accountant.Extensions;
 
 using Frostspark.Server.Commands.Assertions;
@@ -48,9 +50,9 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (FindAccount(username, out var refn))
+            if (AccountUtilities.TryFindAccount(username, out var refn))
             {
-                ply.SendErrorMessage($"This account is already registered. If it's your account, please use /login <password> to sign in.");
+                ply.SendErrorMessage($"This account is already registered.");
                 refn.Dispose();
                 return;
             }
@@ -58,40 +60,23 @@ namespace Accountant.Commands.Implementations
             //The above may seem to warrant the account to be non-existent, but concurrent creation attempts may exist on the same database server.
             //A creation attempt will confirm whether or not the account exists.
 
-            if(!AccountantPlugin.Instance.Accounts.CreateAccount(username, password, out refn))
+            var result = AccountantPlugin.Instance.Accounts.CreateAccount(username, password, out refn);
+
+            switch(result)
             {
-                if (FindAccount(username, out var refn2))
-                {
-                    ply.SendErrorMessage($"This account is already registered. If it's your account, please use /login <password> to sign in.");
-                    refn2.Dispose();
-                    return;
-                }
-                else
-                {
+                case AccountCreateResult.Success:
+                    session.Account = refn;
+                    ply.SendSuccessMessage($"The account {username} was successfully created, and you have been logged in.");
+                    break;
+                case AccountCreateResult.AlreadyExists:
+                    ply.SendErrorMessage($"This account is already registered.");
+                    break;
+                case AccountCreateResult.PluginBlocked:
+                    ply.SendErrorMessage($"Account creation denied by another plugin.");
+                    break;
+                case AccountCreateResult.StorageError:
                     ply.SendErrorMessage($"Account creation failed due to a database error. Try again later.");
-                    return;
-                }
-            }
-            else
-            {
-                session.Account = refn;
-                ply.SendSuccessMessage($"The account {username} was successfully created, and you have been logged in.");
-            }
-        }
-
-        private bool FindAccount(string name, out ObjectReference<Account> refn)
-        {
-            refn = null;
-
-            try
-            {
-                refn = AccountantPlugin.Instance.Accounts.GetAccountByUsername(name);
-
-                return true;
-            }
-            catch (EntryNotFoundException)
-            {
-                return false;
+                    break;
             }
         }
     }

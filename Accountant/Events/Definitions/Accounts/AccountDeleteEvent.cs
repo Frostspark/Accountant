@@ -1,10 +1,23 @@
-﻿using System;
+﻿using Accountant.Accounts;
+
+using Frostspark.API;
+using Frostspark.API.Events;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Accountant.Events.Definitions.Accounts
 {
-    class AccountDeleteEvent
+    /// <summary>
+    /// Raised when account is being deleted, before it's dropped from storage.
+    /// </summary>
+    public class AccountDeleteEvent : AccountEvent, ICancellable
     {
+        internal AccountDeleteEvent(Account account, Server server) : base(account, server)
+        {
+        }
+
+        public bool Cancelled { get; set; }
     }
 }
