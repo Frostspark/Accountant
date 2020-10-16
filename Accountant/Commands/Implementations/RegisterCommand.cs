@@ -44,9 +44,10 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (session.Authenticated)
+            if (session.TryGetAccount(out var accref))
             {
                 ply.SendErrorMessage($"You are already logged in!");
+                accref.Dispose();
                 return;
             }
 

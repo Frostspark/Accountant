@@ -16,7 +16,9 @@ namespace Accountant
     public class AccountantPlugin : Frostspark.API.Plugins.Plugin
     {
         internal static AccountantPlugin Instance { get; private set; }
+
         internal static Server Server => Server.Instance;
+
         internal CommandManager Commands;
         internal AccountantConfig Configuration;
         internal AccountManager Accounts;

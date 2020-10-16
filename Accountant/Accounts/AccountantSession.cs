@@ -10,6 +10,23 @@ namespace Accountant.Accounts
     {
         internal ObjectReference<Account> Account { get; set; }
 
-        public bool Authenticated => Account != null && Account.Valid;
+        public bool TryGetAccount(out ObjectReference<Account> acc)
+        {
+            acc = null;
+
+            var refn = Account;
+
+            if (refn == null)
+                return false;
+
+            lock (refn)
+            {
+                if (!refn.Valid)
+                    return false;
+
+                acc = refn.Duplicate();
+                return true;
+            }
+        }
     }
 }

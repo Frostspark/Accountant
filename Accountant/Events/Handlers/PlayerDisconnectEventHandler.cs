@@ -16,24 +16,7 @@ namespace Accountant.Events.Handlers
         {
             var ply = obj.Player as Frostspark.Server.Entities.Player;
 
-            var sess = ply.Session();
-
-            if(sess == null)
-            {
-                return;
-            }
-
-            var accref = sess.Account;
-
-            if(accref != null)
-            {
-                sess.Account = null;
-
-                if(accref.Valid)
-                {
-                    accref.Dispose();
-                }
-            }
+            ply.Signout();
         }
     }
 }

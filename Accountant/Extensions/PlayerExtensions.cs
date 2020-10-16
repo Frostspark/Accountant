@@ -9,9 +9,9 @@ using System.Text;
 
 namespace Accountant.Extensions
 {
-    internal static class PlayerExtensions
+    public static class PlayerExtensions
     {
-        internal static AccountantSession Session(this Player player)
+        public static AccountantSession Session(this Frostspark.API.Entities.Player player)
         {
             if (!player.GetMetadata(AccountantPlugin.Instance, true, "auth_session", out AccountantSession val))
                 return null;
@@ -25,7 +25,7 @@ namespace Accountant.Extensions
         /// </summary>
         /// <param name="player"></param>
         /// <param name="out_of"></param>
-        /// <returns></returns>
+        /// <returns>Whether or not the user's authentication status changed.</returns>
         internal static bool Signout(this Player player, Account out_of = null)
         {
             var session = player.Session();
@@ -35,23 +35,26 @@ namespace Accountant.Extensions
 
             var accref = session.Account;
 
-            if (accref?.Valid ?? false)
+            if (accref == null)
+                return false;
+
+            lock (accref)
             {
-                lock (accref)
+                if (!accref.Valid)
+                    return false;
+
+                var acc = accref.Object;
+
+                if (out_of == null || out_of == acc)
                 {
-                    var acc = accref.Object;
+                    PlayerLogoutEvent ple = new PlayerLogoutEvent(player, AccountantPlugin.Server);
 
-                    if (out_of == null || out_of == acc)
-                    {
-                        PlayerLogoutEvent ple = new PlayerLogoutEvent(player, AccountantPlugin.Server);
+                    AccountantPlugin.Server.Events.FireEvent(ple);
 
-                        AccountantPlugin.Server.Events.FireEvent(ple);
+                    accref.Dispose();
+                    session.Account = null;
 
-                        accref.Dispose();
-                        session.Account = null;
-
-                        return true;
-                    }
+                    return true;
                 }
             }
 

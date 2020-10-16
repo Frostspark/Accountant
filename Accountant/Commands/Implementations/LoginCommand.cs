@@ -35,9 +35,10 @@ namespace Accountant.Commands.Implementations
             if (!SessionUtilities.AcquireSession(ply, out var session))
                 return;
 
-            if (session.Authenticated)
+            if (session.TryGetAccount(out var accref))
             {
                 ply.SendErrorMessage($"You are already logged in!");
+                accref.Dispose();
                 return;
             }
 
@@ -95,9 +96,10 @@ namespace Accountant.Commands.Implementations
             if (!SessionUtilities.AcquireSession(ply, out var session))
                 return;
 
-            if (session.Authenticated)
+            if (session.TryGetAccount(out var accref))
             {
                 ply.SendErrorMessage($"You are already logged in!");
+                accref.Dispose();
                 return;
             }
 
@@ -133,9 +135,10 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (session.Authenticated)
+            if (session.TryGetAccount(out var accref))
             {
                 ply.SendErrorMessage($"You are already logged in!");
+                accref.Dispose();
                 return;
             }
 

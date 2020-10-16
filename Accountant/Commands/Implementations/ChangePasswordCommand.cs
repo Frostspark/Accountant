@@ -30,37 +30,40 @@ namespace Accountant.Commands.Implementations
             if (!SessionUtilities.AcquireSession(ply, out var session))
                 return;
 
-            if(!session.Authenticated)
+            if(!session.TryGetAccount(out var accountref))
             {
                 ply.SendErrorMessage($"You must be logged in to change an account's password.");
                 return;
             }
 
-            if (new_password != new_password_confirm)
+            using (accountref)
             {
-                ply.SendErrorMessage($"The new password and the confirmation password must be the same.");
-                return;
-            }
+                if (new_password != new_password_confirm)
+                {
+                    ply.SendErrorMessage($"The new password and the confirmation password must be the same.");
+                    return;
+                }
 
-            Account account = session.Account.Object;
+                Account account = accountref.Object;
 
-            if (!BCrypt.Net.BCrypt.EnhancedVerify(old_password, account.Password))
-            {
-                ply.SendErrorMessage($"The current password you specified is incorrect.");
-                return;
-            }
+                if (!BCrypt.Net.BCrypt.EnhancedVerify(old_password, account.Password))
+                {
+                    ply.SendErrorMessage($"The current password you specified is incorrect.");
+                    return;
+                }
 
-            var hash = BCrypt.Net.BCrypt.EnhancedHashPassword(new_password);
+                var hash = BCrypt.Net.BCrypt.EnhancedHashPassword(new_password);
 
-            account.Password = hash;
+                account.Password = hash;
 
-            if (account.Save())
-            {
-                ply.SendSuccessMessage($"Your account's password has been successfully updated.");
-            }
-            else
-            {
-                ply.SendErrorMessage($"Your account's password was not updated due to a server error. Please try again.");
+                if (account.Save())
+                {
+                    ply.SendSuccessMessage($"Your account's password has been successfully updated.");
+                }
+                else
+                {
+                    ply.SendErrorMessage($"Your account's password was not updated due to a server error. Please try again.");
+                }
             }
 
         }
