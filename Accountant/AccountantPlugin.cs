@@ -59,7 +59,7 @@ namespace Accountant
             StorageProvider.RegisterDefaultProviders();
             var types = StorageProvider.ConfigTypes;
 
-            Configuration = ConfigManager.LoadConfig<AccountantConfig>(Path.Combine(DataFolder, "config.json"), new() { PolymorphicTypes = types, Indented = true });
+            Configuration = ConfigManager.LoadConfig<AccountantConfig>(Path.Combine(DataFolder, "config.json"), new ConfigSettings() { PolymorphicTypes = types, Indented = true });
 
             Provider = StorageProvider.SetupStorageProvider(Configuration.Storage);
             Provider.Initialize();

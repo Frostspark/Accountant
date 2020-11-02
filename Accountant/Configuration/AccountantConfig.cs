@@ -18,6 +18,9 @@ namespace Accountant.Configuration
         [JsonPropertyName("allow-guests")]
         public bool AllowGuests;
 
+        [JsonPropertyName("guest-whitelisted-commands")]
+        public string[] GuestCommands;
+
         [JsonPropertyName("storage")]
         public StorageConfig Storage;
 
@@ -27,6 +30,7 @@ namespace Accountant.Configuration
             AllowGuests = false;
             Storage = new SQLiteStorageConfig();
             Storage.SetDefaults();
+            GuestCommands = new[] { "login", "register", "help" };
         }
     }
 }

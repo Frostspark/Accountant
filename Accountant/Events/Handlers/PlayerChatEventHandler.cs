@@ -9,28 +9,21 @@ using System.Threading.Tasks;
 
 namespace Accountant.Events.Handlers
 {
-    class PlayerChatEventHandler : Frostspark.API.Events.EventHandler<PlayerChatEvent>
+    public class PlayerChatEventHandler : Frostspark.API.Events.EventHandler<PlayerChatEvent>
     {
         public override void Handle(PlayerChatEvent pce)
         {
-            if (pce.Cancelled)
+            if (pce.Cancelled || AccountantPlugin.Instance.Configuration.AllowGuests)
                 return;
 
             var ply = pce.Player as Frostspark.Server.Entities.Player;
 
             var sesn = ply.Session();
 
-            var accref = sesn.Account;
-
-            if(accref != null)
+            if(sesn.TryGetAccount(out var refn))
             {
-                lock (accref)
-                {
-                    if(accref.Valid)
-                    {
-                        return;
-                    }
-                }
+                refn.Dispose();
+                return;
             }
 
             pce.Cancelled = true;
