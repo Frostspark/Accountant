@@ -20,7 +20,7 @@ namespace Accountant.Commands.Implementations
     [CommandName("accountant")]
     [CommandDescription("Plugin and account management commands for server administrators")]
     [CommandPermission("accountant.commands.accountant")]
-    internal class AccountantCommand : CommandWrapper<CommandSender>
+    public class AccountantCommand : CommandWrapper<CommandSender>
     {
         [SubCommand("remove")]
         [CommandPermission("accountant.commands.accountant.remove")]

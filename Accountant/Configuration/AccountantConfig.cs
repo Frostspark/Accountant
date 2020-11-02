@@ -1,30 +1,32 @@
 ﻿using Accountant.Configuration.Storage;
 
-using Newtonsoft.Json;
-
 using SharedUtils.Configuration;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Accountant.Configuration
 {
     public class AccountantConfig : Config
     {
-        [JsonProperty("allow-uuid-signin")]
+        [JsonPropertyName("allow-uuid-signin")]
         public bool AllowUUIDSignin;
 
-        [JsonProperty("allow-guests")]
+        [JsonPropertyName("allow-guests")]
         public bool AllowGuests;
 
-        [JsonProperty("storage", TypeNameHandling = TypeNameHandling.All)]
+        [JsonPropertyName("storage")]
         public StorageConfig Storage;
 
         public override void SetDefaults()
         {
             AllowUUIDSignin = false;
             AllowGuests = false;
+            Storage = new SQLiteStorageConfig();
+            Storage.SetDefaults();
         }
     }
 }

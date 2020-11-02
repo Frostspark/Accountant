@@ -1,9 +1,9 @@
 ﻿using Accountant.Accounts;
+using Accountant.Accounts.Metadata;
 using Accountant.Configuration.Storage;
-
+using Dahomey.Json;
+using Dahomey.Json.Attributes;
 using Microsoft.Data.Sqlite;
-
-using Newtonsoft.Json;
 
 using SharedUtils.Generic;
 using SharedUtils.Storage;
@@ -11,7 +11,9 @@ using SharedUtils.Storage.Exceptions;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace Accountant.Storage
 {
@@ -163,27 +165,25 @@ namespace Accountant.Storage
         {
             conn.RunQuery("SELECT `key`, `value` from user_metadata WHERE `id` = @id", (r) =>
             {
-                var serializer_settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All };
+                Dictionary<string, string> kvs = new Dictionary<string, string>();
 
                 while (r.Read())
                 {
                     string key = r.GetString(0);
                     string val = r.GetString(1);
 
-                    object obj;
-
-                    try
-                    {
-                        obj = JsonConvert.DeserializeObject(val, serializer_settings);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception($"Invalid metadata JSON in account {acc.Identifier} (uname: {acc.Username}) at key {key}: {e.Message}", e);
-                    }
-
-                    acc.Metadata.Add(key, obj);
-
+                    kvs.Add(key, val);
                 }
+
+                try
+                {
+                    acc.DeserializeMetadata(kvs);
+                }
+                catch (Exception e)
+                {
+                    Plugin.Log.LogError($"Failed to load account metadata for user {acc.Identifier} (uname {acc.Username}):\n{e}");
+                }
+
             }, new Dictionary<string, object> { { "id", acc.Identifier } });
         }
 
@@ -195,9 +195,10 @@ namespace Accountant.Storage
             {
                 conn.Open();
 
-                PlayerAutoLogins ali = new PlayerAutoLogins();
-
-                ali.UUID = uuid;
+                PlayerAutoLogins ali = new PlayerAutoLogins
+                {
+                    UUID = uuid
+                };
 
                 conn.RunQuery("SELECT `id` FROM `user_metadata` WHERE `key` = @key AND instr(`value`, @uuid) > 0", (r) =>
                 {
@@ -225,7 +226,7 @@ namespace Accountant.Storage
         {
             SqliteConnectionStringBuilder sb = new SqliteConnectionStringBuilder
             {
-                DataSource = Config.Database
+                DataSource = Path.GetFullPath(Path.Combine(Plugin.DataFolder, Config.Database))
             };
 
             ConnectionString = sb.ConnectionString;
@@ -235,6 +236,8 @@ namespace Accountant.Storage
             try
             {
                 conn.Open();
+                Plugin.Log.LogSuccess($"Storage provider {nameof(SQLiteStorageProvider)} initialised successfully.");
+                InitializeTables(conn);
             }
             catch (SqliteException exc)
             {
@@ -250,7 +253,7 @@ namespace Accountant.Storage
             return new StorageResult();
         }
 
-        private void InitialiseTables(SqliteConnection connection)
+        private void InitializeTables(SqliteConnection connection)
         {
             connection.RunNonQuery("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `username` TEXT UNIQUE, `password` TEXT)");
             connection.RunNonQuery("CREATE TABLE IF NOT EXISTS `user_metadata` ( `id` INTEGER, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`id`,`key`))");
@@ -298,14 +301,11 @@ namespace Accountant.Storage
 
                 //Merge the metadata store here.
 
-                var meta = account.Metadata;
+                var kvs = account.SerializeMetadata();
 
-                var serializer_settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All };
-
-                foreach(var kv in meta)
+                foreach(var kv in kvs)
                 {
-                    string value_string = JsonConvert.SerializeObject(kv.Value);
-                    conn.RunNonQuery("INSERT INTO user_metadata (`id`, `key`, `value`) VALUES (@id, @key, @value) ON CONFLICT (`id`, `key`) DO UPDATE SET `value` = @value", new Dictionary<string, object> { { "id", account.Identifier }, { "key", kv.Key }, { "value", value_string } });
+                    conn.RunNonQuery("INSERT INTO user_metadata (`id`, `key`, `value`) VALUES (@id, @key, @value) ON CONFLICT (`id`, `key`) DO UPDATE SET `value` = @value", new Dictionary<string, object> { { "id", account.Identifier }, { "key", kv.Key }, { "value", kv.Value } });
                 }
 
                 transaction.Commit();

@@ -21,8 +21,11 @@ namespace Accountant.Accounts
     {
         public StorageProvider Provider { get; private set; }
 
-        internal AccountManager(StorageProvider provider)
+        public AccountantPlugin Plugin { get; private set; }
+
+        internal AccountManager(AccountantPlugin plugin, StorageProvider provider)
         {
+            Plugin = plugin;
             Provider = provider;
         }
 

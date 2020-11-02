@@ -25,8 +25,9 @@ namespace Accountant.Commands.Implementations
     [CommandName("login")]
     [CommandDescription("Signs you into an existing account.")]
     [CommandPermission("accountant.commands.login")]
-    internal class LoginCommand : CommandWrapper<CommandSender>
+    public class LoginCommand : CommandWrapper<CommandSender>
     {
+        [CommandCallback]
         public void LoginWithUUID()
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
@@ -88,6 +89,7 @@ namespace Accountant.Commands.Implementations
             acc.UpdateLogonTime();
         }
 
+        [CommandCallback]
         public void LoginWithPassword(string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
@@ -125,6 +127,7 @@ namespace Accountant.Commands.Implementations
             }
         }
 
+        [CommandCallback]
         public void LoginWithUsernamePassword(string username, string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))

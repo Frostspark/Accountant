@@ -4,6 +4,7 @@ using Accountant.Accounts.Enums;
 using Accountant.Commands.Utilities;
 using Accountant.Extensions;
 
+using Frostspark.API.Entities.Interfaces;
 using Frostspark.Server.Commands.Assertions;
 using Frostspark.Server.Commands.Attributes;
 using Frostspark.Server.Entities;
@@ -22,7 +23,7 @@ namespace Accountant.Commands.Implementations
     [CommandName("register")]
     [CommandDescription("Registers a new account with a given name.")]
     [CommandPermission("accountant.commands.register")]
-    internal class RegisterCommand : CommandWrapper<CommandSender>
+    public class RegisterCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]
         public void CreateWithPassword(string password)
