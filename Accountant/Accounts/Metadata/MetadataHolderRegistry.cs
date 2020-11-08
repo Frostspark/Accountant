@@ -14,7 +14,7 @@ namespace Accountant.Accounts.Metadata
 {
     public sealed class MetadataHolderRegistry
     {
-        public delegate MetadataHolder<T> MetadataHolderCreator<T>(T value);
+        public delegate MHT MetadataHolderCreator<T, MHT>(T value);
         public delegate MetadataHolder MetadataHolderCreatorIntern(object value);
 
         internal MetadataHolderRegistry()
@@ -25,6 +25,7 @@ namespace Accountant.Accounts.Metadata
         private readonly object SyncRoot = new();
 
         private ReadOnlyDictionary<Type, MetadataHolderCreatorIntern> Creators = new ReadOnlyDictionary<Type, MetadataHolderCreatorIntern>(new Dictionary<Type, MetadataHolderCreatorIntern>());
+        private ReadOnlyCollection<Type> MetadataHolderTypes = new ReadOnlyCollection<Type>(new List<Type>());
 
         internal MetadataHolder<T> CreateHolder<T>(T obj)
         {
@@ -47,21 +48,23 @@ namespace Accountant.Accounts.Metadata
 
         internal void SetupDefaults()
         {
-            RegisterHolder<int>((i) => new IntMetadataHolder() { Value = i });
-            RegisterHolder<uint>((ui) => new UIntMetadataHolder() { Value = ui });
-            RegisterHolder<short>((sh) => new ShortMetadataHolder() { Value = sh });
-            RegisterHolder<ushort>((ush) => new UShortMetadataHolder() { Value = ush });
-            RegisterHolder<long>((l) => new LongMetadataHolder() { Value = l });
-            RegisterHolder<ulong>((ul) => new ULongMetadataHolder() { Value = ul });
-            RegisterHolder<byte>((b) => new ByteMetadataHolder() { Value = b });
-            RegisterHolder<sbyte>((sb) => new SByteMetadataHolder() { Value = sb });
-            RegisterHolder<string>((str) => new StringMetadataHolder() { Value = str });
+            RegisterHolder<int, IntMetadataHolder>((i) => new IntMetadataHolder() { Value = i });
+            RegisterHolder<uint, UIntMetadataHolder>((ui) => new UIntMetadataHolder() { Value = ui });
+            RegisterHolder<short, ShortMetadataHolder>((sh) => new ShortMetadataHolder() { Value = sh });
+            RegisterHolder<ushort, UShortMetadataHolder>((ush) => new UShortMetadataHolder() { Value = ush });
+            RegisterHolder<long, LongMetadataHolder>((l) => new LongMetadataHolder() { Value = l });
+            RegisterHolder<ulong, ULongMetadataHolder>((ul) => new ULongMetadataHolder() { Value = ul });
+            RegisterHolder<byte, ByteMetadataHolder>((b) => new ByteMetadataHolder() { Value = b });
+            RegisterHolder<sbyte, SByteMetadataHolder>((sb) => new SByteMetadataHolder() { Value = sb });
+            RegisterHolder<string, StringMetadataHolder>((str) => new StringMetadataHolder() { Value = str });
         }
 
-        public bool RegisterHolder<T>(MetadataHolderCreator<T> creator)
+        public bool RegisterHolder<T, MHT>(MetadataHolderCreator<T, MHT> creator) where MHT : MetadataHolder<T>
         {
             var type = typeof(T);
-            MetadataHolderCreator<T> mhc = creator;
+            var concreteholdertype = typeof(MHT);
+
+            MetadataHolderCreator<T, MHT> mhc = creator;
 
             MetadataHolder intern(object obj) => mhc((T)obj);
 
@@ -69,9 +72,16 @@ namespace Accountant.Accounts.Metadata
             {
                 var cr = Creators.ToDictionary();
 
-                if (cr.TryAdd(type, intern))
+                var hts = MetadataHolderTypes.ToList();
+
+                if (cr.TryAdd(type, intern) && !hts.Contains(concreteholdertype))
                 {
                     Creators = cr.ToReadOnly();
+
+                    hts.Add(concreteholdertype);
+
+                    MetadataHolderTypes = hts.ToReadOnly();
+
                     return true;
                 }
                 else
@@ -81,21 +91,29 @@ namespace Accountant.Accounts.Metadata
             }
         }
 
-        public bool DeregisterHolder<T>()
+        public bool DeregisterHolder<T, MHT>() where MHT : MetadataHolder<T>
         {
             var type = typeof(T);
+            var ctype = typeof(MHT);
 
             lock (SyncRoot)
             {
                 var cr = Creators;
+                var mhts = MetadataHolderTypes;
 
-                if (cr.ContainsKey(type))
+                if (cr.ContainsKey(type) && mhts.Contains(ctype))
                 {
                     var cr2 = cr.ToDictionary();
 
                     cr2.Remove(type);
 
                     Creators = cr2.ToReadOnly();
+
+                    var mhts2 = mhts.ToList();
+
+                    mhts2.Remove(ctype);
+
+                    MetadataHolderTypes = mhts2.ToReadOnly();
 
                     return true;
                 }
@@ -106,11 +124,11 @@ namespace Accountant.Accounts.Metadata
 
         internal void PushRegisteredTypes(DiscriminatorConventionRegistry registry)
         {
-            var cr = Creators;
+            var types = MetadataHolderTypes;
 
-            foreach(var x in cr)
+            foreach(var type in types)
             {
-                registry.RegisterType(x.Key);
+                registry.RegisterType(type);
             }
         }
     }

@@ -22,6 +22,8 @@ namespace Accountant.Accounts.Metadata
 
             registry.RegisterConvention(new DefaultDiscriminatorConvention<string>(jso));
 
+            registry.DiscriminatorPolicy = DiscriminatorPolicy.Always;
+
             plugin.MetadataRegistry.PushRegisteredTypes(registry);
 
             return jso;
