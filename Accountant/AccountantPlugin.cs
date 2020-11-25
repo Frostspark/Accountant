@@ -1,5 +1,6 @@
 ﻿using Accountant.Accounts;
 using Accountant.Accounts.Metadata;
+using Accountant.API;
 using Accountant.Commands;
 using Accountant.Configuration;
 using Accountant.Events;
@@ -8,6 +9,8 @@ using Accountant.Storage;
 using Frostspark.Server;
 
 using SharedUtils.Configuration;
+using SharedUtils.References;
+using SharedUtils.Storage.Exceptions;
 
 using System;
 using System.Collections.Generic;
@@ -29,6 +32,8 @@ namespace Accountant
         internal AccountManager Accounts;
         internal StorageProvider Provider;
         internal MetadataHolderRegistry MetadataRegistry;
+
+        public AccountantAPI API { get; private set; }
 
         public AccountantPlugin()
         {
@@ -70,6 +75,8 @@ namespace Accountant
             Accounts = new AccountManager(this, Provider);
 
             Provider.SetManager(Accounts);
+
+            API = new AccountantAPI(this);
         }
 
         public override void Unload()
