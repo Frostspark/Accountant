@@ -68,7 +68,7 @@ namespace Accountant.Commands.Implementations
 
             Account acc = refn.Object;
 
-            if (!acc.GetMetadata<AccountAutoLogins>(Account.AutoLoginMetaKey, out var aal) || !aal.Enabled)
+            if (!acc.TryGetMetadata<AccountAutoLogins>(Account.AutoLoginMetaKey, out var aal) || !aal.Enabled)
             {
                 ply.SendErrorMessage($"This account cannot be automatically logged into.");
                 refn.Dispose();

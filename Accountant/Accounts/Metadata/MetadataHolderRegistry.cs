@@ -42,7 +42,7 @@ namespace Accountant.Accounts.Metadata
             }
             else
             {
-                throw new InvalidOperationException("Unknown holder type!");
+                throw new InvalidOperationException($"No holder type is defined for type {typeof(T).Name}");
             }
         }
 

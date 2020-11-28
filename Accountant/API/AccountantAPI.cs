@@ -20,23 +20,23 @@ namespace Accountant.API
             Plugin = plugin;
         }
 
-        public bool TryGetAccountByName(string name, out ObjectReference<Account> acc)
+        public AccountLookupResult TryGetAccountByName(string name, out ObjectReference<Account> acc)
         {
             acc = default;
 
             try
             {
                 acc = Plugin.Accounts.GetAccountByUsername(name);
-                return true;
+                return AccountLookupResult.Success;
             }
             catch (EntryNotFoundException)
             {
-                return false;
+                return AccountLookupResult.NotFound;
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Error processing API call to retrieve account by name: {e}");
-                return false;
+                Plugin.Log.LogError($"Exception processing API call to retrieve account by name (name: {name}): {e}");
+                return AccountLookupResult.InternalError;
             }
         }
     }

@@ -7,6 +7,8 @@ using SharedUtils.References;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 
@@ -14,7 +16,7 @@ namespace Accountant.Accounts
 {
     /// <summary>
     /// Represents a user account.
-    /// <para>This class is not thread safe.</para>
+    /// <para>This class is not guaranteed to be thread safe.</para>
     /// </summary>
     public class Account : IIdentifiable<long>
     {
@@ -28,8 +30,9 @@ namespace Accountant.Accounts
             Manager = manager;
             Provider = provider;
             Identifier = id;
-            Metadata = new Dictionary<string, object>();
         }
+
+        private readonly object SyncRoot = new();
 
         public long Identifier { get; internal set; }
 
@@ -37,14 +40,15 @@ namespace Accountant.Accounts
 
         public string Password;
 
-        private Dictionary<string, object> Metadata;
+        private ReadOnlyDictionary<string, object> Metadata = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
         public bool Save()
         {
-            return Provider.SaveAccount(this).Success;
+            lock (SyncRoot)
+                return Provider.SaveAccount(this).Success;
         }
 
-        public bool GetMetadata<T>(string key, out T value)
+        public bool TryGetMetadata<T>(string key, out T value)
         {
             value = default;
 
@@ -66,7 +70,66 @@ namespace Accountant.Accounts
 
         public void SetMetadata<T>(string key, T value)
         {
-            Metadata[key] = Manager.Plugin.MetadataRegistry.CreateHolder(value);
+            lock (SyncRoot)
+            {
+                var m = Metadata.ToDictionary();
+
+                m[key] = Manager.Plugin.MetadataRegistry.CreateHolder(value);
+
+                Metadata = m.ToReadOnly();
+
+                Save();
+            }
+        }
+
+        internal void SetMetadataWrapped(string key, object obj)
+        {
+            lock(SyncRoot)
+            {
+                var m = Metadata.ToDictionary();
+
+                m[key] = obj;
+
+                Metadata = m.ToReadOnly();
+            }
+        }
+
+        public bool TryRemoveMetadata<T>(string t, out T value)
+        {
+            value = default;
+
+            lock (SyncRoot)
+            {
+                var m = Metadata;
+
+                if(m.ContainsKey(t))
+                {
+                    var m2 = Metadata.ToDictionary();
+
+                    m2.Remove(t, out var val);
+
+                    if(val is MetadataHolder<T> mht)
+                    {
+                        value = mht.Value;
+                    }
+                    else if(val is MetadataHolder)
+                    {
+                        Manager.Plugin.Log.LogWarning($"Call to TryRemoveMetadata specified incorrect generic type to provide out value to, returning default! (holder type is {val.GetType().Name}, caller provided {typeof(MetadataHolder<T>).Name})");
+                    }
+                    else
+                    {
+                        Manager.Plugin.Log.LogWarning($"Metadata under key {t} for account {this.Identifier} was not packed inside a MetadataHolder, returning default.");
+                    }
+
+                    Metadata = m2.ToReadOnly();
+
+                    Save();
+
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         internal void UpdateLogonTime()
@@ -89,7 +152,9 @@ namespace Accountant.Accounts
 
             Dictionary<string, string> kvs = new Dictionary<string, string>();
 
-            foreach(var x in Metadata)
+            var m = Metadata;
+
+            foreach(var x in m)
             {
                 kvs.Add(x.Key, JsonSerializer.Serialize(x.Value, jso));
             }
@@ -121,7 +186,7 @@ namespace Accountant.Accounts
 
             foreach(var x in deserialized)
             {
-                Metadata[x.Key] = x.Value;
+                SetMetadataWrapped(x.Key, x.Value);
             }
         }
     }

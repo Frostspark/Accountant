@@ -303,6 +303,8 @@ namespace Accountant.Storage
 
                 var kvs = account.SerializeMetadata();
 
+                conn.RunNonQuery("DELETE FROM user_metadata WHERE id = @id", new() { { "id", account.Identifier } });
+
                 foreach(var kv in kvs)
                 {
                     conn.RunNonQuery("INSERT INTO user_metadata (`id`, `key`, `value`) VALUES (@id, @key, @value) ON CONFLICT (`id`, `key`) DO UPDATE SET `value` = @value", new Dictionary<string, object> { { "id", account.Identifier }, { "key", kv.Key }, { "value", kv.Value } });
