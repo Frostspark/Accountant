@@ -27,6 +27,7 @@ namespace Accountant.Commands
             cmdmgr.RegisterCommand<RegisterCommand>();
             cmdmgr.RegisterCommand<ChangePasswordCommand>();
             cmdmgr.RegisterCommand<AccountantCommand>();
+            cmdmgr.RegisterCommand<LogoutCommand>();
 
         }
 
@@ -38,6 +39,7 @@ namespace Accountant.Commands
             cmdmgr.DeregisterCommand<RegisterCommand>();
             cmdmgr.DeregisterCommand<ChangePasswordCommand>();
             cmdmgr.DeregisterCommand<AccountantCommand>();
+            cmdmgr.DeregisterCommand<LogoutCommand>();
         }
     }
 }
