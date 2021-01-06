@@ -15,6 +15,8 @@ namespace Accountant.Events
 
         private PlayerConnectEventHandler ConnectEventHandler = new PlayerConnectEventHandler();
         private PlayerDisconnectEventHandler DisconnectEventHandler = new PlayerDisconnectEventHandler();
+        private PlayerChatEventHandler ChatEventHandler = new PlayerChatEventHandler();
+        private PlayerCommandEventHandler CommandEventHandler = new PlayerCommandEventHandler();
 
         internal EventManager(Server server, AccountantPlugin plugin)
         {
@@ -26,12 +28,16 @@ namespace Accountant.Events
         {
             Server.Events.RegisterHandler(Plugin, ConnectEventHandler);
             Server.Events.RegisterHandler(Plugin, DisconnectEventHandler);
+            Server.Events.RegisterHandler(Plugin, ChatEventHandler);
+            Server.Events.RegisterHandler(Plugin, CommandEventHandler);
         }
 
         internal void Deregister()
         {
             Server.Events.UnregisterHandler(Plugin, ConnectEventHandler);
             Server.Events.UnregisterHandler(Plugin, DisconnectEventHandler);
+            Server.Events.UnregisterHandler(Plugin, ChatEventHandler);
+            Server.Events.UnregisterHandler(Plugin, CommandEventHandler);
         }
     }
 }
