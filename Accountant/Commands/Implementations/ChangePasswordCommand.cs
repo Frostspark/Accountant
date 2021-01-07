@@ -17,7 +17,7 @@ namespace Accountant.Commands.Implementations
 {
     [CommandName("changepw", "changepassword")]
     [CommandDescription("Changes your account's password.")]
-    [CommandPermission("accountant.commands.login")]
+    [CommandPermission("accountant.commands.changepw")]
     public class ChangePasswordCommand : CommandWrapper<CommandSender>
     {
 

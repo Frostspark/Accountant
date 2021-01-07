@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Accountant.Events.Handlers
+namespace Accountant.Events.Handlers.Player
 {
     public class PlayerConnectEventHandler : Frostspark.API.Events.EventHandler<PlayerConnectEvent>
     {

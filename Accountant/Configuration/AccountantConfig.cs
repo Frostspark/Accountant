@@ -21,6 +21,9 @@ namespace Accountant.Configuration
         [JsonPropertyName("guest-whitelisted-commands")]
         public string[] GuestCommands;
 
+        [JsonPropertyName("logon-nag-cooldown")]
+        public double NagCooldown;
+
         [JsonPropertyName("storage")]
         public StorageConfig Storage;
 
@@ -28,6 +31,7 @@ namespace Accountant.Configuration
         {
             AllowUUIDSignin = false;
             AllowGuests = false;
+            NagCooldown = 2.0d;
             Storage = new SQLiteStorageConfig();
             Storage.SetDefaults();
             GuestCommands = new[] { "login", "register", "help" };

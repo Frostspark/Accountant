@@ -19,7 +19,7 @@ namespace Accountant.Commands.Implementations
 {
     [CommandName("logout")]
     [CommandDescription("Signs you out of the account you're logged into.")]
-    [CommandPermission("accountant.commands.login")]
+    [CommandPermission("accountant.commands.logout")]
     public class LogoutCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]

@@ -1,12 +1,14 @@
 ﻿using Accountant.Extensions;
+
 using Frostspark.API.Events.Players;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Accountant.Events.Handlers
+namespace Accountant.Events.Handlers.Player
 {
     public class PlayerCommandEventHandler : Frostspark.API.Events.EventHandler<PlayerCommandEvent>
     {

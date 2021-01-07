@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Accountant.Accounts
 {
     public class AccountantSession
     {
         internal ObjectReference<Account> Account { get; set; }
+
+        internal int LogonNagCooldown;
 
         public bool TryGetAccount(out ObjectReference<Account> acc)
         {
@@ -27,6 +30,23 @@ namespace Accountant.Accounts
                 acc = refn.Duplicate();
                 return true;
             }
+        }
+
+        internal bool TryNag()
+        {
+            if(LogonNagCooldown == 0)
+            {
+                LogonNagCooldown = (int)Math.Ceiling(AccountantPlugin.Instance.Configuration.NagCooldown * 60);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        internal void Update()
+        {
+            LogonNagCooldown--;
         }
     }
 }

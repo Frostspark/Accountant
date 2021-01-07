@@ -1,5 +1,7 @@
-﻿using Accountant.Events.Handlers;
+﻿using Accountant.Events.Handlers.Player;
+
 using Frostspark.Server;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,9 @@ namespace Accountant.Events
         private PlayerDisconnectEventHandler DisconnectEventHandler = new PlayerDisconnectEventHandler();
         private PlayerChatEventHandler ChatEventHandler = new PlayerChatEventHandler();
         private PlayerCommandEventHandler CommandEventHandler = new PlayerCommandEventHandler();
+        private PlayerMoveEventHandler MoveEventHandler = new PlayerMoveEventHandler();
+        private PlayerSpawnProjectileEventHandler SpawnProjectileEventHandler = new PlayerSpawnProjectileEventHandler();
+        private PlayerUpdateEventHandler UpdateEventHandler = new PlayerUpdateEventHandler();
 
         internal EventManager(Server server, AccountantPlugin plugin)
         {
@@ -30,6 +35,9 @@ namespace Accountant.Events
             Server.Events.RegisterHandler(Plugin, DisconnectEventHandler);
             Server.Events.RegisterHandler(Plugin, ChatEventHandler);
             Server.Events.RegisterHandler(Plugin, CommandEventHandler);
+            Server.Events.RegisterHandler(Plugin, MoveEventHandler);
+            Server.Events.RegisterHandler(Plugin, SpawnProjectileEventHandler);
+            Server.Events.RegisterHandler(Plugin, UpdateEventHandler);
         }
 
         internal void Deregister()
@@ -38,6 +46,9 @@ namespace Accountant.Events
             Server.Events.UnregisterHandler(Plugin, DisconnectEventHandler);
             Server.Events.UnregisterHandler(Plugin, ChatEventHandler);
             Server.Events.UnregisterHandler(Plugin, CommandEventHandler);
+            Server.Events.UnregisterHandler(Plugin, MoveEventHandler);
+            Server.Events.UnregisterHandler(Plugin, SpawnProjectileEventHandler);
+            Server.Events.UnregisterHandler(Plugin, UpdateEventHandler);
         }
     }
 }

@@ -1,13 +1,15 @@
 ﻿using Accountant.Extensions;
+
 using Frostspark.API.Events;
 using Frostspark.API.Events.Players;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Accountant.Events.Handlers
+namespace Accountant.Events.Handlers.Player
 {
     public class PlayerChatEventHandler : Frostspark.API.Events.EventHandler<PlayerChatEvent>
     {
@@ -20,7 +22,7 @@ namespace Accountant.Events.Handlers
 
             var sesn = ply.Session();
 
-            if(sesn.TryGetAccount(out var refn))
+            if (sesn.TryGetAccount(out var refn))
             {
                 refn.Dispose();
                 return;

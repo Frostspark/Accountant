@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Accountant.Events.Handlers
+namespace Accountant.Events.Handlers.Player
 {
     public class PlayerDisconnectEventHandler : Frostspark.API.Events.EventHandler<PlayerDisconnectEvent>
     {
