@@ -2,6 +2,7 @@
 
 using Frostspark.API;
 using Frostspark.API.Events;
+using Frostspark.API.Events.Interfaces;
 
 using System;
 using System.Collections.Generic;

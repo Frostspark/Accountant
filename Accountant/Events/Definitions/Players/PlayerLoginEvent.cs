@@ -4,6 +4,7 @@ using Accountant.Accounts;
 using Frostspark.API;
 using Frostspark.API.Entities;
 using Frostspark.API.Events;
+using Frostspark.API.Events.Interfaces;
 using Frostspark.API.Events.Players;
 
 using System;
