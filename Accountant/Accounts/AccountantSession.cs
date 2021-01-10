@@ -11,6 +11,10 @@ namespace Accountant.Accounts
     {
         internal ObjectReference<Account> Account { get; set; }
 
+        internal Account _account;
+
+        internal bool IsLoggedIn { get; set; }
+
         internal int LogonNagCooldown;
 
         public bool TryGetAccount(out ObjectReference<Account> acc)

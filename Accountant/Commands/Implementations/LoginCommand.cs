@@ -82,11 +82,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            session.Account = refn;
-
-            ply.SendSuccessMessage($"Logged in as {acc.Username}.");
-
-            acc.UpdateLogonTime();
+            PerformLogon(ply, session, refn);
         }
 
         [CommandCallback]
@@ -121,9 +117,7 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                session.Account = refn;
-                ply.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-                acc.UpdateLogonTime();
+                PerformLogon(ply, session, refn);
             }
         }
 
@@ -166,9 +160,7 @@ namespace Accountant.Commands.Implementations
 
                 if (!ple.Cancelled)
                 {
-                    session.Account = refn;
-                    ply.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-                    acc.UpdateLogonTime();
+                    PerformLogon(ply, session, refn);
                 }
                 else
                 {
@@ -176,6 +168,16 @@ namespace Accountant.Commands.Implementations
                 }
             }
 
+        }
+
+        private void PerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
+        {
+            var acc = refn.Object;
+
+            session.Account = refn;
+            session.IsLoggedIn = true;
+            player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
+            acc.UpdateLogonTime();
         }
     }
 }

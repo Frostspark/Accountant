@@ -17,11 +17,9 @@ namespace Accountant.Events
 
         private PlayerConnectEventHandler ConnectEventHandler = new PlayerConnectEventHandler();
         private PlayerDisconnectEventHandler DisconnectEventHandler = new PlayerDisconnectEventHandler();
-        private PlayerChatEventHandler ChatEventHandler = new PlayerChatEventHandler();
         private PlayerCommandEventHandler CommandEventHandler = new PlayerCommandEventHandler();
-        private PlayerMoveEventHandler MoveEventHandler = new PlayerMoveEventHandler();
-        private PlayerSpawnProjectileEventHandler SpawnProjectileEventHandler = new PlayerSpawnProjectileEventHandler();
         private PlayerUpdateEventHandler UpdateEventHandler = new PlayerUpdateEventHandler();
+        private PlayerEventHandler EventHandler = new PlayerEventHandler();
 
         internal EventManager(Server server, AccountantPlugin plugin)
         {
@@ -33,22 +31,18 @@ namespace Accountant.Events
         {
             Server.Events.RegisterHandler(Plugin, ConnectEventHandler);
             Server.Events.RegisterHandler(Plugin, DisconnectEventHandler);
-            Server.Events.RegisterHandler(Plugin, ChatEventHandler);
             Server.Events.RegisterHandler(Plugin, CommandEventHandler);
-            Server.Events.RegisterHandler(Plugin, MoveEventHandler);
-            Server.Events.RegisterHandler(Plugin, SpawnProjectileEventHandler);
             Server.Events.RegisterHandler(Plugin, UpdateEventHandler);
+            Server.Events.RegisterHandler(Plugin, EventHandler);
         }
 
         internal void Deregister()
         {
             Server.Events.UnregisterHandler(Plugin, ConnectEventHandler);
             Server.Events.UnregisterHandler(Plugin, DisconnectEventHandler);
-            Server.Events.UnregisterHandler(Plugin, ChatEventHandler);
             Server.Events.UnregisterHandler(Plugin, CommandEventHandler);
-            Server.Events.UnregisterHandler(Plugin, MoveEventHandler);
-            Server.Events.UnregisterHandler(Plugin, SpawnProjectileEventHandler);
             Server.Events.UnregisterHandler(Plugin, UpdateEventHandler);
+            Server.Events.UnregisterHandler(Plugin, EventHandler);
         }
     }
 }

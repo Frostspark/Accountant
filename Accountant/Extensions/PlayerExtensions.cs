@@ -60,5 +60,15 @@ namespace Accountant.Extensions
 
             return false;
         }
+
+        internal static bool IsLoggedIn(this Player player)
+        {
+            var session = player.Session();
+
+            if (session == null)
+                return false;
+
+            return session.IsLoggedIn;
+        }
     }
 }

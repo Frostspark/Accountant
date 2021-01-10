@@ -25,17 +25,12 @@ namespace Accountant.Events.Handlers.Player
 
             var player = pce.Player as Frostspark.Server.Entities.Player;
 
-            var session = player.Session();
-
-            if (session.TryGetAccount(out var refn))
+            if (!player.IsLoggedIn())
             {
-                refn.Dispose();
-                return;
+                pce.Cancelled = true;
+
+                player.SendErrorMessage("You must be logged in to use commands.");
             }
-
-            pce.Cancelled = true;
-
-            player.SendErrorMessage("You must be logged in to use commands.");
         }
     }
 }
