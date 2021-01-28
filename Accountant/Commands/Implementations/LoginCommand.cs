@@ -25,6 +25,7 @@ namespace Accountant.Commands.Implementations
     [CommandName("login")]
     [CommandDescription("Signs you into an existing account.")]
     [CommandPermission("accountant.commands.login")]
+    [NoParameterLogging]
     public class LoginCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]

@@ -23,6 +23,7 @@ namespace Accountant.Commands.Implementations
     [CommandName("register")]
     [CommandDescription("Registers a new account with a given name.")]
     [CommandPermission("accountant.commands.register")]
+    [NoParameterLogging]
     public class RegisterCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]
