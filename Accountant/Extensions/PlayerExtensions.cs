@@ -53,6 +53,7 @@ namespace Accountant.Extensions
 
                     accref.Dispose();
                     session.Account = null;
+                    session.IsLoggedIn = false;
 
                     return true;
                 }
