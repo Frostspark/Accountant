@@ -77,7 +77,7 @@ namespace Accountant.Storage
 
                 await conn.RunQueryAsync("SELECT `id`, `username`, `password` FROM users WHERE `id` = @id", async (r) =>
                 {
-                    if (await r.ReadAsync())
+                    if (await r.ReadAsync().ConfigureAwait(false))
                     {
                         long id = r.GetInt64(0);
                         string username = r.GetString(1);
@@ -129,7 +129,7 @@ namespace Accountant.Storage
 
                 await conn.RunQueryAsync("SELECT `id`, `username`, `password` FROM `users` WHERE `username` = @username", async (r) =>
                 {
-                    if (await r.ReadAsync())
+                    if (await r.ReadAsync().ConfigureAwait(false))
                     {
                         long id = r.GetInt64(0);
                         string username = r.GetString(1);
@@ -171,7 +171,7 @@ namespace Accountant.Storage
             {
                 Dictionary<string, string> kvs = new Dictionary<string, string>();
 
-                while (await r.ReadAsync())
+                while (await r.ReadAsync().ConfigureAwait(false))
                 {
                     string key = r.GetString(0);
                     string val = r.GetString(1);
@@ -206,7 +206,7 @@ namespace Accountant.Storage
 
                 await conn.RunQueryAsync("SELECT `id` FROM `user_metadata` WHERE `key` = @key AND instr(`value`, @uuid) > 0", async (r) =>
                 {
-                    while (await r.ReadAsync())
+                    while (await r.ReadAsync().ConfigureAwait(false))
                     {
                         long account = r.GetInt64(0);
                         ali.Accounts.Add(account);
@@ -284,7 +284,7 @@ namespace Accountant.Storage
 
                     await conn.RunQueryAsync("SELECT last_insert_rowid()", async (r) =>
                     {
-                        if (!await r.ReadAsync())
+                        if (!await r.ReadAsync().ConfigureAwait(false))
                         {
                             throw new InvalidOperationException("sqlite last_insert_rowid() returned no rows");
                         }

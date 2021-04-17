@@ -45,7 +45,7 @@ namespace Accountant.Accounts
 
         public async ValueTask<bool> Save()
         {
-            var res = await Provider.SaveAccount(this);
+            var res = await Provider.SaveAccount(this).ConfigureAwait(false);
             return res.Success;
         }
 
@@ -77,7 +77,7 @@ namespace Accountant.Accounts
 
             Metadata = m.ToReadOnly();
 
-            await Save();
+            await Save().ConfigureAwait(false);
         }
 
         internal void SetMetadataWrapped(string key, object obj)
@@ -115,7 +115,7 @@ namespace Accountant.Accounts
 
                 Metadata = m2.ToReadOnly();
 
-                await Save();
+                await Save().ConfigureAwait(false);
 
                 return (true, value);
             }
@@ -127,7 +127,7 @@ namespace Accountant.Accounts
         {
             long utc_time = TimeUtils.UtcUnixMillis;
 
-            await SetMetadata("last_logon", utc_time);
+            await SetMetadata("last_logon", utc_time).ConfigureAwait(false);
         }
 
         public ObjectReference<Account> GetReference()

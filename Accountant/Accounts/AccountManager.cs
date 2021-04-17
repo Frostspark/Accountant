@@ -49,7 +49,7 @@ namespace Accountant.Accounts
 
             //SaveAccount with an unset identifier (-1) causes an insert/create rather than update.
 
-            var result = await Provider.SaveAccount(account);
+            var result = await Provider.SaveAccount(account).ConfigureAwait(false);
 
             if (result.Success)
             {
@@ -75,7 +75,7 @@ namespace Accountant.Accounts
 
             try
             {
-                refn = await GetAccountByUsername(username);
+                refn = await GetAccountByUsername(username).ConfigureAwait(true);
             }
             catch
             {
@@ -92,7 +92,7 @@ namespace Accountant.Accounts
                 return AccountDeleteResult.PluginBlocked;
             }
 
-            var result = await Provider.DeleteAccount(refn.Object);
+            var result = await Provider.DeleteAccount(refn.Object).ConfigureAwait(true);
 
             if (result.Success)
             {
@@ -176,7 +176,7 @@ namespace Accountant.Accounts
                 return res.Object<Account>() ?? throw res.Exception;
             }
 
-            var res = await AddOrGet(id, factory);
+            var res = await AddOrGet(id, factory).ConfigureAwait(false);
 
             if (res.Success)
                 return res.ObjectReference;
