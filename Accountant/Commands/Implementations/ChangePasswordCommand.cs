@@ -12,6 +12,7 @@ using SharedUtils.Commands.Commands;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
@@ -23,7 +24,7 @@ namespace Accountant.Commands.Implementations
     {
 
         [CommandCallback]
-        public void ChangePassword(string old_password, string new_password, string new_password_confirm)
+        public async Task ChangePassword(string old_password, string new_password, string new_password_confirm)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
@@ -57,7 +58,7 @@ namespace Accountant.Commands.Implementations
 
                 account.Password = hash;
 
-                if (account.Save())
+                if (await account.Save())
                 {
                     ply.SendSuccessMessage($"Your account's password has been successfully updated.");
                 }

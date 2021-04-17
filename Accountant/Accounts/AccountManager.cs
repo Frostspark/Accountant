@@ -6,6 +6,8 @@ using Accountant.Storage;
 
 using SharedUtils.OOPUtils;
 using SharedUtils.References;
+using SharedUtils.References.Enums;
+using SharedUtils.References.Managers.Slim;
 using SharedUtils.Storage.Exceptions;
 
 using System;
@@ -13,11 +15,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace Accountant.Accounts
 {
-    public class AccountManager : Manager<long, Account>
+    public class AccountManager : AsyncSlimManager<long, Account>
     {
         public StorageProvider Provider { get; private set; }
 
@@ -29,13 +32,8 @@ namespace Accountant.Accounts
             Provider = provider;
         }
 
-        public AccountCreateResult CreateAccount(string username, string password, out ObjectReference<Account> refn)
+        public async Task<(AccountCreateResult result, ObjectReference<Account> refn)> CreateAccount(string username, string password)
         {
-            refn = null;
-
-            //TODO: Create with placeholder password, then on success hash it and update?
-            //Unsure, this might be a lot of labour to perform upfront without guarantee of success.
-
             Account account = new Account(this, Provider, -1)
             {
                 Username = username,
@@ -47,29 +45,29 @@ namespace Accountant.Accounts
             AccountantPlugin.Server.Events.FireEvent(ace);
 
             if (ace.Cancelled)
-                return AccountCreateResult.PluginBlocked;
+                return (AccountCreateResult.PluginBlocked, null);
 
             //SaveAccount with an unset identifier (-1) causes an insert/create rather than update.
 
-            var result = Provider.SaveAccount(account);
+            var result = await Provider.SaveAccount(account);
 
             if (result.Success)
             {
-                if (!TryAdd(account, out refn))
-                    return AccountCreateResult.AlreadyExists;
+                if (!TryAdd(account, out var refn))
+                    return (AccountCreateResult.AlreadyExists, null);
                 else
-                    return AccountCreateResult.Success;
+                    return (AccountCreateResult.Success, refn.ObjectReference);
             }
             else
             {
                 if (result.Exception is EntryAlreadyExistsException)
-                    return AccountCreateResult.AlreadyExists;
+                    return (AccountCreateResult.AlreadyExists, null);
                 else
-                    return AccountCreateResult.StorageError;
+                    return (AccountCreateResult.StorageError, null);
             }
         }
 
-        public AccountDeleteResult DeleteAccount(string username)
+        public async Task<AccountDeleteResult> DeleteAccount(string username)
         {
             //Find the account. If it throws, then it doesn't exist, return false.
 
@@ -77,7 +75,7 @@ namespace Accountant.Accounts
 
             try
             {
-                refn = GetAccountByUsername(username);
+                refn = await GetAccountByUsername(username);
             }
             catch
             {
@@ -94,37 +92,24 @@ namespace Accountant.Accounts
                 return AccountDeleteResult.PluginBlocked;
             }
 
-            var adresult = AccountDeleteResult.NotFound;
+            var result = await Provider.DeleteAccount(refn.Object);
 
-            Synchroniser.Synchronise(refn.Object, (_) =>
+            if (result.Success)
             {
-                var result = Provider.DeleteAccount(refn.Object);
-
-                if(result.Success)
+                AccountantPlugin.Server.Players.ForEach(ply =>
                 {
-                    //Deauthenticate everyone logged into this account.
-                    //The synchroniser lock ensures no new logins to this account can occur.
-
-                    AccountantPlugin.Server.Players.ForEach(ply =>
+                    if (ply.Signout(refn.Object))
                     {
-                        if (ply.Signout(refn.Object))
-                        {
-                            ply.SendInfoMessage("You have been logged out because your account has been deleted.");
-                        }
-                    });
+                        ply.SendInfoMessage("You have been logged out because your account has been deleted.");
+                    }
+                });
 
-                    adresult = AccountDeleteResult.Success;
-                }
-                else
-                {
-                    adresult = AccountDeleteResult.StorageError;
-                }
-
-            });
-
-            refn.Dispose();
-
-            return adresult;
+                return AccountDeleteResult.Success;
+            }
+            else
+            {
+                return AccountDeleteResult.StorageError;
+            }
         }
 
         /// <summary>
@@ -136,23 +121,36 @@ namespace Accountant.Accounts
         /// <exception cref="DataIntegrityException">When multiple accounts match a name due to database error.</exception>
         /// <exception cref="Exception">If the provider fails to fetch an account.</exception>
         /// <returns></returns>
-        public ObjectReference<Account> GetAccountByUsername(string username)
+        public async Task<ObjectReference<Account>> GetAccountByUsername(string username)
         {
             var list = Find((acc) => acc.Username == username);
 
             if (list.Count == 0)
             {
 
-                Account factory()
+                async ValueTask<Account> factory()
                 {
-                    var res = Provider.GetAccount(username);
+                    var res = await Provider.GetAccount(username).ConfigureAwait(false);
 
                     return res.Object<Account>() ?? throw res.Exception;
                 }
 
-                var acc = factory();
+                var acc = await factory().ConfigureAwait(false);
 
-                return AddOrGet(acc.Identifier, factory);
+                var res = await AddOrGet(acc.Identifier, factory).ConfigureAwait(false);
+
+                if (res.Success)
+                {
+                    return res.ObjectReference;
+                }
+                else if (res.Result == EAddOrGetResult.LoadError)
+                {
+                    throw res.LoadError;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported AddOrGet result: {res.Result}");
+                }
             }
             else
             {
@@ -170,20 +168,27 @@ namespace Accountant.Accounts
             }
         }
 
-        public ObjectReference<Account> GetAccountById(long id)
+        public async Task<ObjectReference<Account>> GetAccountById(long id)
         {
-            Account factory()
+            async ValueTask<Account> factory()
             {
-                var res = Provider.GetAccount(id);
+                var res = await Provider.GetAccount(id).ConfigureAwait(false);
                 return res.Object<Account>() ?? throw res.Exception;
             }
 
-            return AddOrGet(id, factory);
+            var res = await AddOrGet(id, factory);
+
+            if (res.Success)
+                return res.ObjectReference;
+            else if (res.Result == EAddOrGetResult.LoadError)
+                throw res.LoadError;
+            else
+                throw new InvalidOperationException($"Unsupported AddOrGet result: {res.Result}");
         }
 
-        public PlayerAutoLogins GetAutoLoginsByUUID(string uuid)
+        public async Task<PlayerAutoLogins> GetAutoLoginsByUUID(string uuid)
         {
-            var res = Provider.GetAutologinEntries(uuid);
+            var res = await Provider.GetAutologinEntries(uuid).ConfigureAwait(false);
 
             return res.Object<PlayerAutoLogins>() ?? throw res.Exception;
         }
@@ -191,6 +196,16 @@ namespace Accountant.Accounts
         internal ObjectReference<Account> CreateReference(Account account)
         {
             return References.Create(account);
+        }
+
+        public override bool Initialize()
+        {
+            return true;
+        }
+
+        protected override Account CreateObject(Action<Account> initializer = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

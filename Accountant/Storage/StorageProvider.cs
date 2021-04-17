@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Storage
 {
@@ -18,6 +19,7 @@ namespace Accountant.Storage
         private static readonly Dictionary<Type, StorageProviderConfigurator> Providers = new Dictionary<Type, StorageProviderConfigurator>();
 
         protected readonly AccountantPlugin Plugin;
+
         protected AccountManager Manager { get; private set; }
 
         internal StorageProvider(AccountantPlugin plugin, StorageConfig config)
@@ -34,13 +36,13 @@ namespace Accountant.Storage
         /// Initializes the provider.
         /// <para>Test for success using <see cref="StorageResult.Success"/></para>
         /// </summary>
-        public abstract StorageResult Initialize();
+        public abstract ValueTask<StorageResult> Initialize();
 
         /// <summary>
         /// Deinitialises the provider.
         /// </summary>
         /// <returns></returns>
-        public abstract StorageResult Deinitialise();
+        public abstract ValueTask<StorageResult> Deinitialise();
 
         /// <summary>
         /// Deletes an account.
@@ -48,7 +50,7 @@ namespace Accountant.Storage
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public abstract StorageResult DeleteAccount(Account acc);
+        public abstract ValueTask<StorageResult> DeleteAccount(Account acc);
 
         /// <summary>
         /// Retrieves an account by id, or throws an exception.
@@ -56,7 +58,7 @@ namespace Accountant.Storage
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public abstract StorageResult GetAccount(long id);
+        public abstract ValueTask<StorageResult> GetAccount(long id);
 
         /// <summary>
         /// Retrieves an account by username, or throws an exception.
@@ -64,7 +66,7 @@ namespace Accountant.Storage
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public abstract StorageResult GetAccount(string name);
+        public abstract ValueTask<StorageResult> GetAccount(string name);
 
         /// <summary>
         /// Saves an account.
@@ -72,7 +74,7 @@ namespace Accountant.Storage
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        public abstract StorageResult SaveAccount(Account account);
+        public abstract ValueTask<StorageResult> SaveAccount(Account account);
 
         /// <summary>
         /// Retrieves auto-login entries for a given uuid.
@@ -80,7 +82,7 @@ namespace Accountant.Storage
         /// </summary>
         /// <param name="uuid"></param>
         /// <returns></returns>
-        public abstract StorageResult GetAutologinEntries(string uuid);
+        public abstract ValueTask<StorageResult> GetAutologinEntries(string uuid);
 
         internal static void RegisterStorageProvider<SC>(StorageProviderConfigurator config) where SC : StorageConfig
         {

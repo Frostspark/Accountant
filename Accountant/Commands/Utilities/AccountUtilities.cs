@@ -1,4 +1,5 @@
 ﻿using Accountant.Accounts;
+using Accountant.Accounts.Enums;
 
 using SharedUtils.References;
 using SharedUtils.Storage.Exceptions;
@@ -6,6 +7,7 @@ using SharedUtils.Storage.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Commands.Utilities
 {
@@ -18,19 +20,19 @@ namespace Accountant.Commands.Utilities
         /// <param name="refn"></param>
         /// <returns></returns>
 
-        internal static bool TryFindAccount(string name, out ObjectReference<Account> refn)
+        internal static async ValueTask<(FindAccountResult result, ObjectReference<Account> reference)> TryFindAccount(string name)
         {
-            refn = null;
-
             try
             {
-                refn = AccountantPlugin.Instance.Accounts.GetAccountByUsername(name);
-
-                return true;
+                return (FindAccountResult.Found, await AccountantPlugin.Instance.Accounts.GetAccountByUsername(name));
             }
             catch (EntryNotFoundException)
             {
-                return false;
+                return (FindAccountResult.NotFound, null);
+            }
+            catch
+            {
+                return (FindAccountResult.Error, null);
             }
         }
     }

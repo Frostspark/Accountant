@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Accountant.Storage
 {
@@ -24,7 +25,7 @@ namespace Accountant.Storage
 
         internal SQLiteStorageProvider(AccountantPlugin plugin, StorageConfig config) : base(plugin, config)
         {
-            if(config is SQLiteStorageConfig sqliteconfig)
+            if (config is SQLiteStorageConfig sqliteconfig)
             {
                 Config = sqliteconfig;
             }
@@ -34,46 +35,49 @@ namespace Accountant.Storage
             }
         }
 
-        public override StorageResult Deinitialise()
+        public override async ValueTask<StorageResult> Deinitialise()
         {
             return new StorageResult();
         }
 
-        public override StorageResult DeleteAccount(Account acc)
+        public override async ValueTask<StorageResult> DeleteAccount(Account acc)
         {
             var conn = new SqliteConnection(ConnectionString);
+
             try
             {
-                conn.Open();
+                long id = acc.Identifier;
 
-                conn.RunNonQuery("DELETE FROM `users` WHERE `id` = @id", new Dictionary<string, object> { { "id", acc.Identifier } });
-                conn.RunNonQuery("DELETE FROM `user_metadata` WHERE `id` = @id", new Dictionary<string, object> { { "id", acc.Identifier } });
+                await conn.OpenAsync().ConfigureAwait(false);
+
+                await conn.RunNonQueryAsync("DELETE FROM `users` WHERE `id` = @id", new Dictionary<string, object> { { "id", id } }).ConfigureAwait(false);
+                await conn.RunNonQueryAsync("DELETE FROM `user_metadata` WHERE `id` = @id", new Dictionary<string, object> { { "id", id } }).ConfigureAwait(false);
 
                 return new StorageResult();
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Deleting account id {acc.Identifier} (uname {acc.Username}) failed:");
+                Plugin.Log.LogError($"Deleting account id {acc.Identifier} (uname {acc.Username}) failed: {e}");
                 return new StorageResult(e);
             }
             finally
             {
-                conn.Close();
+                await conn.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        public override StorageResult GetAccount(long id)
+        public override async ValueTask<StorageResult> GetAccount(long id)
         {
             var conn = new SqliteConnection(ConnectionString);
             try
             {
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
 
                 Account acc = null;
 
-                conn.RunQuery("SELECT `id`, `username`, `password` FROM users WHERE `id` = @id", (r) =>
+                await conn.RunQueryAsync("SELECT `id`, `username`, `password` FROM users WHERE `id` = @id", async (r) =>
                 {
-                    if(r.Read())
+                    if (await r.ReadAsync())
                     {
                         long id = r.GetInt64(0);
                         string username = r.GetString(1);
@@ -86,11 +90,11 @@ namespace Accountant.Storage
                         };
 
                     }
-                }, new Dictionary<string, object> { { "id", id } });
+                }, new Dictionary<string, object> { { "id", id } }).ConfigureAwait(false);
 
                 if (acc != null)
                 {
-                    LoadMetadata(conn, acc);
+                    await LoadMetadata(conn, acc).ConfigureAwait(false);
                 }
 
                 if (acc == null)
@@ -109,23 +113,23 @@ namespace Accountant.Storage
             }
             finally
             {
-                conn.Close();
+                await conn.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        public override StorageResult GetAccount(string name)
+        public override async ValueTask<StorageResult> GetAccount(string name)
         {
             var conn = new SqliteConnection(ConnectionString);
 
             try
             {
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
 
                 Account acc = null;
 
-                conn.RunQuery("SELECT `id`, `username`, `password` FROM `users` WHERE `username` = @username", (r) =>
+                await conn.RunQueryAsync("SELECT `id`, `username`, `password` FROM `users` WHERE `username` = @username", async (r) =>
                 {
-                    if (r.Read())
+                    if (await r.ReadAsync())
                     {
                         long id = r.GetInt64(0);
                         string username = r.GetString(1);
@@ -138,10 +142,10 @@ namespace Accountant.Storage
                         };
                     }
 
-                }, new Dictionary<string, object>() { { "username", name } });
+                }, new Dictionary<string, object>() { { "username", name } }).ConfigureAwait(false);
 
                 if (acc != null)
-                    LoadMetadata(conn, acc);
+                    await LoadMetadata(conn, acc).ConfigureAwait(false);
 
                 if (acc == null)
                     return new StorageResult(new EntryNotFoundException("No account by this username exists."));
@@ -156,18 +160,18 @@ namespace Accountant.Storage
             }
             finally
             {
-                conn.Close();
+                await conn.CloseAsync().ConfigureAwait(false);
             }
 
         }
 
-        private void LoadMetadata(SqliteConnection conn, Account acc)
+        private async Task LoadMetadata(SqliteConnection conn, Account acc)
         {
-            conn.RunQuery("SELECT `key`, `value` from user_metadata WHERE `id` = @id", (r) =>
+            await conn.RunQueryAsync("SELECT `key`, `value` from user_metadata WHERE `id` = @id", async (r) =>
             {
                 Dictionary<string, string> kvs = new Dictionary<string, string>();
 
-                while (r.Read())
+                while (await r.ReadAsync())
                 {
                     string key = r.GetString(0);
                     string val = r.GetString(1);
@@ -184,30 +188,30 @@ namespace Accountant.Storage
                     Plugin.Log.LogError($"Failed to load account metadata for user {acc.Identifier} (uname {acc.Username}):\n{e}");
                 }
 
-            }, new Dictionary<string, object> { { "id", acc.Identifier } });
+            }, new Dictionary<string, object> { { "id", acc.Identifier } }).ConfigureAwait(false);
         }
 
-        public override StorageResult GetAutologinEntries(string uuid)
+        public override async ValueTask<StorageResult> GetAutologinEntries(string uuid)
         {
             var conn = new SqliteConnection(ConnectionString);
 
             try
             {
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
 
                 PlayerAutoLogins ali = new PlayerAutoLogins
                 {
                     UUID = uuid
                 };
 
-                conn.RunQuery("SELECT `id` FROM `user_metadata` WHERE `key` = @key AND instr(`value`, @uuid) > 0", (r) =>
+                await conn.RunQueryAsync("SELECT `id` FROM `user_metadata` WHERE `key` = @key AND instr(`value`, @uuid) > 0", async (r) =>
                 {
-                    while(r.Read())
+                    while (await r.ReadAsync())
                     {
                         long account = r.GetInt64(0);
                         ali.Accounts.Add(account);
                     }
-                }, new Dictionary<string, object> { { "uuid", uuid }, { "key", Account.AutoLoginMetaKey } });
+                }, new Dictionary<string, object> { { "uuid", uuid }, { "key", Account.AutoLoginMetaKey } }).ConfigureAwait(false);
 
                 return new StorageResult(ali);
             }
@@ -218,26 +222,29 @@ namespace Accountant.Storage
             }
             finally
             {
-                conn.Close();
+                await conn.CloseAsync().ConfigureAwait(false);
+                await conn.DisposeAsync().ConfigureAwait(false);
             }
         }
 
-        public override StorageResult Initialize()
+        public override async ValueTask<StorageResult> Initialize()
         {
-            SqliteConnectionStringBuilder sb = new SqliteConnectionStringBuilder
+            SqliteConnectionStringBuilder sb = new()
             {
                 DataSource = Path.GetFullPath(Path.Combine(Plugin.DataFolder, Config.Database))
             };
 
             ConnectionString = sb.ConnectionString;
 
-            SqliteConnection conn = new SqliteConnection(ConnectionString);
+            SqliteConnection conn = new(ConnectionString);
 
             try
             {
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
+
                 Plugin.Log.LogSuccess($"Storage provider {nameof(SQLiteStorageProvider)} initialised successfully.");
-                InitializeTables(conn);
+
+                await InitializeTables(conn).ConfigureAwait(false);
             }
             catch (SqliteException exc)
             {
@@ -246,36 +253,38 @@ namespace Accountant.Storage
             }
             finally
             {
-                conn.Close();
-                conn.Dispose();
+                await conn.CloseAsync().ConfigureAwait(false);
+                await conn.DisposeAsync().ConfigureAwait(false);
             }
 
             return new StorageResult();
         }
 
-        private void InitializeTables(SqliteConnection connection)
+        private async Task InitializeTables(SqliteConnection connection)
         {
-            connection.RunNonQuery("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `username` TEXT UNIQUE, `password` TEXT)");
-            connection.RunNonQuery("CREATE TABLE IF NOT EXISTS `user_metadata` ( `id` INTEGER, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`id`,`key`))");
+            await connection.RunNonQueryAsync("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `username` TEXT UNIQUE, `password` TEXT)").ConfigureAwait(false);
+            await connection.RunNonQueryAsync("CREATE TABLE IF NOT EXISTS `user_metadata` ( `id` INTEGER, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`id`,`key`))").ConfigureAwait(false);
         }
 
-        public override StorageResult SaveAccount(Account account)
+        public override async ValueTask<StorageResult> SaveAccount(Account account)
         {
-            SqliteConnection conn = new SqliteConnection(ConnectionString);
+            SqliteConnection conn = new(ConnectionString);
 
             try
             {
-                conn.Open();
+                await conn.OpenAsync().ConfigureAwait(false);
 
-                var transaction = conn.BeginTransaction();
+                using var transaction = await conn.BeginTransactionAsync().ConfigureAwait(false);
 
                 if (account.Identifier == -1)
                 {
-                    conn.RunNonQuery("INSERT OR IGNORE INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password } });
+                    await conn.RunNonQueryAsync("INSERT OR IGNORE INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password } }).ConfigureAwait(false);
+
                     long last_id = -1;
-                    conn.RunQuery("SELECT last_insert_rowid()", (r) =>
+
+                    await conn.RunQueryAsync("SELECT last_insert_rowid()", async (r) =>
                     {
-                        if (!r.Read())
+                        if (!await r.ReadAsync())
                         {
                             throw new InvalidOperationException("sqlite last_insert_rowid() returned no rows");
                         }
@@ -284,7 +293,7 @@ namespace Accountant.Storage
                             last_id = r.GetInt64(0);
                         }
 
-                    });
+                    }).ConfigureAwait(false);
 
                     if (last_id == -1)
                         throw new InvalidOperationException("RunQuery did not run ReaderCallback.");
@@ -296,21 +305,21 @@ namespace Accountant.Storage
                 }
                 else
                 {
-                    conn.RunNonQuery("UPDATE users SET `username` = @username, `password` = @password WHERE `id` = @id", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password }, { "id", account.Identifier } });
+                    await conn.RunNonQueryAsync("UPDATE users SET `username` = @username, `password` = @password WHERE `id` = @id", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password }, { "id", account.Identifier } }).ConfigureAwait(false);
                 }
 
                 //Merge the metadata store here.
 
                 var kvs = account.SerializeMetadata();
 
-                conn.RunNonQuery("DELETE FROM user_metadata WHERE id = @id", new() { { "id", account.Identifier } });
+                await conn.RunNonQueryAsync("DELETE FROM user_metadata WHERE id = @id", new() { { "id", account.Identifier } }).ConfigureAwait(false);
 
                 foreach(var kv in kvs)
                 {
-                    conn.RunNonQuery("INSERT INTO user_metadata (`id`, `key`, `value`) VALUES (@id, @key, @value) ON CONFLICT (`id`, `key`) DO UPDATE SET `value` = @value", new Dictionary<string, object> { { "id", account.Identifier }, { "key", kv.Key }, { "value", kv.Value } });
+                    await conn.RunNonQueryAsync("INSERT INTO user_metadata (`id`, `key`, `value`) VALUES (@id, @key, @value) ON CONFLICT (`id`, `key`) DO UPDATE SET `value` = @value", new Dictionary<string, object> { { "id", account.Identifier }, { "key", kv.Key }, { "value", kv.Value } }).ConfigureAwait(false);
                 }
 
-                transaction.Commit();
+                await transaction.CommitAsync().ConfigureAwait(false);
 
                 return new StorageResult();
             }
@@ -321,7 +330,8 @@ namespace Accountant.Storage
             }
             finally 
             {
-                conn.Close();
+                await conn.CloseAsync().ConfigureAwait(false);
+                await conn.DisposeAsync().ConfigureAwait(false);
             }
         }
     }

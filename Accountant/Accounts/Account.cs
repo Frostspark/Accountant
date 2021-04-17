@@ -4,6 +4,7 @@ using Accountant.Storage;
 using SharedUtils.Generic;
 using SharedUtils.OOPUtils;
 using SharedUtils.References;
+using SharedUtils.Storage;
 
 using System;
 using System.Collections.Generic;
@@ -11,12 +12,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Accountant.Accounts
 {
     /// <summary>
     /// Represents a user account.
-    /// <para>This class is not guaranteed to be thread safe.</para>
+    /// <para>This class is not thread safe.</para>
     /// </summary>
     public class Account : IIdentifiable<long>
     {
@@ -32,8 +35,6 @@ namespace Accountant.Accounts
             Identifier = id;
         }
 
-        private readonly object SyncRoot = new();
-
         public long Identifier { get; internal set; }
 
         public string Username;
@@ -42,10 +43,10 @@ namespace Accountant.Accounts
 
         private ReadOnlyDictionary<string, object> Metadata = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
-        public bool Save()
+        public async ValueTask<bool> Save()
         {
-            lock (SyncRoot)
-                return Provider.SaveAccount(this).Success;
+            var res = await Provider.SaveAccount(this);
+            return res.Success;
         }
 
         public bool TryGetMetadata<T>(string key, out T value)
@@ -68,77 +69,65 @@ namespace Accountant.Accounts
             return false;
         }
 
-        public void SetMetadata<T>(string key, T value)
+        public async Task SetMetadata<T>(string key, T value)
         {
-            lock (SyncRoot)
-            {
-                var m = Metadata.ToDictionary();
+            var m = Metadata.ToDictionary();
 
-                m[key] = Manager.Plugin.MetadataRegistry.CreateHolder(value);
+            m[key] = Manager.Plugin.MetadataRegistry.CreateHolder(value);
 
-                Metadata = m.ToReadOnly();
+            Metadata = m.ToReadOnly();
 
-                Save();
-            }
+            await Save();
         }
 
         internal void SetMetadataWrapped(string key, object obj)
         {
-            lock(SyncRoot)
-            {
-                var m = Metadata.ToDictionary();
+            var m = Metadata.ToDictionary();
 
-                m[key] = obj;
+            m[key] = obj;
 
-                Metadata = m.ToReadOnly();
-            }
+            Metadata = m.ToReadOnly();
         }
 
-        public bool TryRemoveMetadata<T>(string t, out T value)
+        public async ValueTask<(bool, T value)> TryRemoveMetadata<T>(string t)
         {
-            value = default;
+            T value = default;
+            var m = Metadata;
 
-            lock (SyncRoot)
+            if (m.ContainsKey(t))
             {
-                var m = Metadata;
+                var m2 = Metadata.ToDictionary();
 
-                if(m.ContainsKey(t))
+                m2.Remove(t, out var val);
+
+                if (val is MetadataHolder<T> mht)
                 {
-                    var m2 = Metadata.ToDictionary();
-
-                    m2.Remove(t, out var val);
-
-                    if(val is MetadataHolder<T> mht)
-                    {
-                        value = mht.Value;
-                    }
-                    else if(val is MetadataHolder)
-                    {
-                        Manager.Plugin.Log.LogWarning($"Call to TryRemoveMetadata specified incorrect generic type to provide out value to, returning default! (holder type is {val.GetType().Name}, caller provided {typeof(MetadataHolder<T>).Name})");
-                    }
-                    else
-                    {
-                        Manager.Plugin.Log.LogWarning($"Metadata under key {t} for account {this.Identifier} was not packed inside a MetadataHolder, returning default.");
-                    }
-
-                    Metadata = m2.ToReadOnly();
-
-                    Save();
-
-                    return true;
+                    value = mht.Value;
+                }
+                else if (val is MetadataHolder)
+                {
+                    Manager.Plugin.Log.LogWarning($"Call to TryRemoveMetadata specified incorrect generic type to provide out value to, returning default! (holder type is {val.GetType().Name}, caller provided {typeof(MetadataHolder<T>).Name})");
+                }
+                else
+                {
+                    Manager.Plugin.Log.LogWarning($"Metadata under key {t} for account {this.Identifier} was not packed inside a MetadataHolder, returning default.");
                 }
 
-                return false;
+                Metadata = m2.ToReadOnly();
+
+                await Save();
+
+                return (true, value);
             }
+
+            return (false, default);
         }
 
-        internal void UpdateLogonTime()
+        internal async Task UpdateLogonTime()
         {
             long utc_time = TimeUtils.UtcUnixMillis;
 
-            SetMetadata("last_logon", utc_time);
-
-            Save();
+            await SetMetadata("last_logon", utc_time);
         }
 
         public ObjectReference<Account> GetReference()

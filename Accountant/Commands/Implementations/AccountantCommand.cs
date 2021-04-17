@@ -14,6 +14,7 @@ using SharedUtils.Storage.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
@@ -24,21 +25,29 @@ namespace Accountant.Commands.Implementations
     {
         [SubCommand("remove")]
         [CommandPermission("accountant.commands.accountant.remove")]
-        public void DeleteAccount(string username)
+        public async Task DeleteAccount(string username)
         {
-            //First, remove it from DB, uprooting any potential saves.
+            var (result, reference) = await AccountUtilities.TryFindAccount(username);
 
-            if (!AccountUtilities.TryFindAccount(username, out var refn))
+            if (result != FindAccountResult.Found)
             {
-                Sender.SendErrorMessage("An account by this name could not be found.");
+                switch (result)
+                {
+                    case FindAccountResult.NotFound:
+                        Sender.SendErrorMessage("An account by this name could not be found.");
+                        break;
+                    case FindAccountResult.Error:
+                        Sender.SendErrorMessage("Account deletion failed due to a server error.");
+                        break;
+                }
                 return;
             }
 
-            var result = AccountantPlugin.Instance.Accounts.DeleteAccount(username);
+            var del_result = await AccountantPlugin.Instance.Accounts.DeleteAccount(username);
 
-            refn.Dispose();
+            reference.Dispose();
 
-            switch(result)
+            switch (del_result)
             {
                 case AccountDeleteResult.Success:
                     Sender.SendSuccessMessage($"Account {username} has been successfully deleted.");

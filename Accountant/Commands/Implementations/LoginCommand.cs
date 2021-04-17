@@ -1,5 +1,6 @@
 ﻿
 using Accountant.Accounts;
+using Accountant.Accounts.Enums;
 using Accountant.Commands.Utilities;
 using Accountant.Events.Definitions.Players;
 using Accountant.Extensions;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Authentication.ExtendedProtection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
@@ -29,7 +31,7 @@ namespace Accountant.Commands.Implementations
     public class LoginCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]
-        public void LoginWithUUID()
+        public async Task LoginWithUUID()
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
@@ -58,12 +60,22 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            //Ensure the UUID is correctly cased.
+            //Ensure the UUID is correctly formatted.
             uuid = guid.ToString();
 
-            if(!AccountUtilities.TryFindAccount(ply.Name, out var refn))
+            var (result, refn) = await AccountUtilities.TryFindAccount(ply.Name);
+
+            if (result != FindAccountResult.Found)
             {
-                ply.SendErrorMessage($"This account currently is not registered. Please use /register in order to claim it.");
+                switch (result)
+                {
+                    case FindAccountResult.NotFound:
+                        ply.SendErrorMessage($"This account currently is not registered. Please use /register in order to claim it.");
+                        break;
+                    case FindAccountResult.Error:
+                        ply.SendErrorMessage("An internal server has occured while looking up this account.");
+                        break;
+                }
                 return;
             }
 
@@ -83,11 +95,11 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            PerformLogon(ply, session, refn);
+            await PerformLogon(ply, session, refn);
         }
 
         [CommandCallback]
-        public void LoginWithPassword(string password)
+        public async Task LoginWithPassword(string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
@@ -102,14 +114,25 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (!AccountUtilities.TryFindAccount(ply.Name, out var refn))
+            var (result, refn) = await AccountUtilities.TryFindAccount(ply.Name);
+
+            if (result != FindAccountResult.Found)
             {
-                ply.SendErrorMessage($"This account is not currently registered. Please use /register in order to claim it.");
+                switch (result)
+                {
+                    case FindAccountResult.NotFound:
+                        ply.SendErrorMessage($"This account currently is not registered. Please use /register in order to claim it.");
+                        break;
+                    case FindAccountResult.Error:
+                        ply.SendErrorMessage("An internal server has occured while looking up this account.");
+                        break;
+                }
                 return;
             }
 
             Account acc = refn.Object;
 
+            //TODO: Put on another thread.
             if (!BCrypt.Net.BCrypt.EnhancedVerify(password, acc.Password))
             {
                 ply.SendErrorMessage("The password you provided is invalid.");
@@ -118,12 +141,12 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                PerformLogon(ply, session, refn);
+                await PerformLogon(ply, session, refn);
             }
         }
 
         [CommandCallback]
-        public void LoginWithUsernamePassword(string username, string password)
+        public async Task LoginWithUsernamePassword(string username, string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
@@ -140,14 +163,25 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (!AccountUtilities.TryFindAccount(username, out var refn))
+            var (result, refn) = await AccountUtilities.TryFindAccount(ply.Name);
+
+            if (result != FindAccountResult.Found)
             {
-                ply.SendErrorMessage($"This account is not currently registered. Please use /register in order to claim it.");
+                switch (result)
+                {
+                    case FindAccountResult.NotFound:
+                        ply.SendErrorMessage($"This account currently is not registered. Please use /register in order to claim it.");
+                        break;
+                    case FindAccountResult.Error:
+                        ply.SendErrorMessage("An internal server has occured while looking up this account.");
+                        break;
+                }
                 return;
             }
 
             Account acc = refn.Object;
 
+            //TODO: Put on another thread.
             if (!BCrypt.Net.BCrypt.EnhancedVerify(password, acc.Password))
             {
                 ply.SendErrorMessage($"The password you provided is invalid.");
@@ -161,7 +195,7 @@ namespace Accountant.Commands.Implementations
 
                 if (!ple.Cancelled)
                 {
-                    PerformLogon(ply, session, refn);
+                    await PerformLogon(ply, session, refn);
                 }
                 else
                 {
@@ -171,14 +205,13 @@ namespace Accountant.Commands.Implementations
 
         }
 
-        private void PerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
+        private static async Task PerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
         {
             var acc = refn.Object;
-
             session.Account = refn;
             session.IsLoggedIn = true;
             player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-            acc.UpdateLogonTime();
+            await acc.UpdateLogonTime();
         }
     }
 }

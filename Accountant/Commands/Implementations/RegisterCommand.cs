@@ -17,6 +17,7 @@ using SharedUtils.Storage.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
@@ -27,16 +28,16 @@ namespace Accountant.Commands.Implementations
     public class RegisterCommand : CommandWrapper<CommandSender>
     {
         [CommandCallback]
-        public void CreateWithPassword(string password)
+        public async Task CreateWithPassword(string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
 
-            CreateWithNameAndPassword(ply.Name, password);
+            await CreateWithNameAndPassword(ply.Name, password);
         }
 
         [CommandCallback]
-        public void CreateWithNameAndPassword(string username, string password)
+        public async Task CreateWithNameAndPassword(string username, string password)
         {
             if (!EntityAssertions.Assert_SenderPlayer(Sender, out Player ply))
                 return;
@@ -53,17 +54,21 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            if (AccountUtilities.TryFindAccount(username, out var refn))
-            {
-                ply.SendErrorMessage($"This account is already registered.");
-                refn.Dispose();
-                return;
-            }
+            //TODO: Determine if this brings any benefit when uncommented.
 
-            //The above may seem to warrant the account to be non-existent, but concurrent creation attempts may exist on the same database server.
-            //A creation attempt will confirm whether or not the account exists.
+            //var (findresult, xrefn) = await AccountUtilities.TryFindAccount(username);
 
-            var result = AccountantPlugin.Instance.Accounts.CreateAccount(username, password, out refn);
+            //if (findresult == FindAccountResult.Found)
+            //{
+            //    ply.SendErrorMessage($"This account is already registered.");
+            //    xrefn.Dispose();
+            //    return;
+            //}
+
+            //The above attempts to short-circuit when an account is verifiably present in memory.
+            //A creation attempt will confirm whether or not the account exists in storage.
+
+            (AccountCreateResult result, ObjectReference<Account> refn) = await AccountantPlugin.Instance.Accounts.CreateAccount(username, password);
 
             switch(result)
             {
