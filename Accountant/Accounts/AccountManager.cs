@@ -40,9 +40,9 @@ namespace Accountant.Accounts
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password)
             };
 
-            AccountCreateEvent ace = new AccountCreateEvent(account, AccountantPlugin.Server);
+            AccountCreateEvent ace = new(account, AccountantPlugin.Server);
 
-            AccountantPlugin.Server.Events.FireEvent(ace);
+            await AccountantPlugin.Server.Events.FireEventAsync(ace);
 
             if (ace.Cancelled)
                 return (AccountCreateResult.PluginBlocked, null);
@@ -82,9 +82,9 @@ namespace Accountant.Accounts
                 return AccountDeleteResult.NotFound;
             }
 
-            AccountDeleteEvent ade = new AccountDeleteEvent(refn.Object, AccountantPlugin.Server);
+            AccountDeleteEvent ade = new(refn.Object, AccountantPlugin.Server);
 
-            AccountantPlugin.Server.Events.FireEvent(ade);
+            await AccountantPlugin.Server.Events.FireEventAsync(ade);
 
             if (ade.Cancelled)
             {
