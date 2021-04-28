@@ -19,9 +19,9 @@ namespace Accountant.Events.Handlers.Player
 
             //TODO: Keep this updated with Frostspark's command implementation, which is currently case-sensitive.
 
-            foreach (var x in AccountantPlugin.Instance.Configuration.GuestCommands)
-                if (pce.Command.StartsWith(x))
-                    return;
+            //WATCHME: Recently replaced the old short-circuiting loop with this. Observe potential performance drawbacks, if any.
+            if (AccountantPlugin.Instance.Configuration.GuestCommands.Any(x => pce.Command.StartsWith(x)))
+                return;
 
             var player = pce.Player as Frostspark.Server.Entities.Player;
 
