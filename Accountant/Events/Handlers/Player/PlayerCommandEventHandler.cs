@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Accountant.Events.Handlers.Player
 {
-    public class PlayerCommandEventHandler : Frostspark.API.Events.EventHandler<PlayerCommandEvent>
+    public class PlayerCommandEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerCommandEvent>
     {
         public override void Handle(PlayerCommandEvent pce)
         {

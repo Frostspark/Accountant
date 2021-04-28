@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Accountant.Events.Handlers.Player
 {
-    public class PlayerEventHandler : Frostspark.API.Events.EventHandler<PlayerEvent>
+    public class PlayerEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerEvent>
     {
         private static Type[] DontHandle = new[] { typeof(PlayerConnectEvent), typeof(PlayerDisconnectEvent), typeof(PlayerCommandEvent), typeof(PlayerUpdateEvent) };
 

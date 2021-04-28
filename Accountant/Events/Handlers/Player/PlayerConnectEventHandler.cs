@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Accountant.Events.Handlers.Player
 {
-    public class PlayerConnectEventHandler : Frostspark.API.Events.EventHandler<PlayerConnectEvent>
+    public class PlayerConnectEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerConnectEvent>
     {
         public override void Handle(PlayerConnectEvent obj)
         {

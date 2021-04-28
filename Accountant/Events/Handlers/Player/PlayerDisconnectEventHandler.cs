@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Accountant.Events.Handlers.Player
 {
-    public class PlayerDisconnectEventHandler : Frostspark.API.Events.EventHandler<PlayerDisconnectEvent>
+    public class PlayerDisconnectEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerDisconnectEvent>
     {
         public override void Handle(PlayerDisconnectEvent obj)
         {

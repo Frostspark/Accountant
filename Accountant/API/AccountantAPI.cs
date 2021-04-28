@@ -20,7 +20,7 @@ namespace Accountant.API
             Plugin = plugin;
         }
 
-        public async Task<(AccountLookupResult, ObjectReference<Account>)> TryGetAccountByName(string name)
+        public async Task<(AccountLookupResult lookup_result, ObjectReference<Account> reference)> TryGetAccountByName(string name)
         {
             try
             {

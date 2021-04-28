@@ -89,7 +89,7 @@ namespace Accountant.Accounts
             Metadata = m.ToReadOnly();
         }
 
-        public async ValueTask<(bool, T value)> TryRemoveMetadata<T>(string t)
+        public async ValueTask<(bool success, T value)> TryRemoveMetadata<T>(string t)
         {
             T value = default;
             var m = Metadata;

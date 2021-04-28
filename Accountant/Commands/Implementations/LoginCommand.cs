@@ -95,7 +95,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            await PerformLogon(ply, session, refn);
+            await TryPerformLogon(ply, session, refn);
         }
 
         [CommandCallback]
@@ -141,7 +141,7 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                await PerformLogon(ply, session, refn);
+                await TryPerformLogon(ply, session, refn);
             }
         }
 
@@ -152,9 +152,7 @@ namespace Accountant.Commands.Implementations
                 return;
 
             if (!SessionUtilities.AcquireSession(ply, out var session))
-            {
                 return;
-            }
 
             if (session.TryGetAccount(out var accref))
             {
@@ -190,28 +188,36 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                PlayerLoginEvent ple = new PlayerLoginEvent(ply, AccountantPlugin.Server, acc);
-                AccountantPlugin.Server.Events.FireEvent(ple);
-
-                if (!ple.Cancelled)
-                {
-                    await PerformLogon(ply, session, refn);
-                }
-                else
-                {
-                    ply.SendErrorMessage($"Account logon denied by another plugin.");
-                }
+                await TryPerformLogon(ply, session, refn);
             }
 
         }
 
-        private static async Task PerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
+        private static async Task TryPerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
         {
-            var acc = refn.Object;
-            session.Account = refn;
-            session.IsLoggedIn = true;
-            player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-            await acc.UpdateLogonTime();
+            if (!refn.TryUnpack(out var acc))
+            {
+                //Generic failure.
+                refn.Dispose();
+                return;
+            }
+
+            PlayerLoginEvent ple = new(player, AccountantPlugin.Server, acc);
+
+            await AccountantPlugin.Server.Events.FireEventAsync(ple);
+
+            if (ple.Cancelled)
+            {
+                player.SendErrorMessage($"Account logon denied by another plugin.");
+                refn.Dispose();
+            }
+            else
+            {
+                session.Account = refn;
+                session.IsLoggedIn = true;
+                player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
+                await acc.UpdateLogonTime();
+            }
         }
     }
 }

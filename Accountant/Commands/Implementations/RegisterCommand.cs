@@ -43,9 +43,7 @@ namespace Accountant.Commands.Implementations
                 return;
 
             if (!SessionUtilities.AcquireSession(ply, out var session))
-            {
                 return;
-            }
 
             if (session.TryGetAccount(out var accref))
             {

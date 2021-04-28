@@ -272,13 +272,18 @@ namespace Accountant.Storage
 
             try
             {
+                //Prepare data while we're on the correct thread.
+                var un = account.Username;
+                var pwd = account.Password;
+                var kvs = account.SerializeMetadata();
+
                 await conn.OpenAsync().ConfigureAwait(false);
 
                 using var transaction = await conn.BeginTransactionAsync().ConfigureAwait(false);
 
                 if (account.Identifier == -1)
                 {
-                    await conn.RunNonQueryAsync("INSERT OR IGNORE INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password } }).ConfigureAwait(false);
+                    await conn.RunNonQueryAsync("INSERT OR IGNORE INTO users (`username`, `password`) VALUES (@username, @password)", new Dictionary<string, object> { { "username", un }, { "password", pwd } }).ConfigureAwait(false);
 
                     long last_id = -1;
 
@@ -305,12 +310,10 @@ namespace Accountant.Storage
                 }
                 else
                 {
-                    await conn.RunNonQueryAsync("UPDATE users SET `username` = @username, `password` = @password WHERE `id` = @id", new Dictionary<string, object> { { "username", account.Username }, { "password", account.Password }, { "id", account.Identifier } }).ConfigureAwait(false);
+                    await conn.RunNonQueryAsync("UPDATE users SET `username` = @username, `password` = @password WHERE `id` = @id", new Dictionary<string, object> { { "username", un }, { "password", pwd }, { "id", account.Identifier } }).ConfigureAwait(false);
                 }
 
                 //Merge the metadata store here.
-
-                var kvs = account.SerializeMetadata();
 
                 await conn.RunNonQueryAsync("DELETE FROM user_metadata WHERE id = @id", new() { { "id", account.Identifier } }).ConfigureAwait(false);
 

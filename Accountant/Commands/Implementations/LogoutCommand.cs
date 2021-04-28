@@ -31,8 +31,6 @@ namespace Accountant.Commands.Implementations
             if (!SessionUtilities.AcquireSession(ply, out var session))
                 return;
 
-            var colors = Server.Instance.Colors;
-
             if (ply.Signout())
             {
                 ply.SendSuccessMessage("You have been succesfully logged out.");
