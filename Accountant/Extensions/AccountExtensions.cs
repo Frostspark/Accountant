@@ -12,7 +12,7 @@ namespace Accountant.Extensions
         {
             AccountantPlugin.Server.Players.ForEach(ply =>
             {
-
+                ply.Signout(account);
             });
         }
     }

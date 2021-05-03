@@ -37,14 +37,19 @@ namespace Accountant.Accounts
 
         public long Identifier { get; internal set; }
 
-        public string Username;
+        public string Username { get; internal set; }
 
-        public string Password;
+        public string Password { get; internal set; }
+
 
         private ReadOnlyDictionary<string, object> Metadata = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
         public async ValueTask<bool> Save()
         {
+            //Make no model changes while in Endpoint mode.
+            if (Manager.Plugin.Configuration.EndpointMode)
+                return false;
+
             var res = await Provider.SaveAccount(this).ConfigureAwait(false);
             return res.Success;
         }
@@ -71,6 +76,10 @@ namespace Accountant.Accounts
 
         public async Task SetMetadata<T>(string key, T value)
         {
+            //Make no model changes while in Endpoint mode.
+            if (Manager.Plugin.Configuration.EndpointMode)
+                return;
+
             var m = Metadata.ToDictionary();
 
             m[key] = Manager.Plugin.MetadataRegistry.CreateHolder(value);
@@ -91,6 +100,10 @@ namespace Accountant.Accounts
 
         public async ValueTask<(bool success, T value)> TryRemoveMetadata<T>(string t)
         {
+            //Make no model changes while in Endpoint mode.
+            if (Manager.Plugin.Configuration.EndpointMode)
+                return (false, default);
+
             T value = default;
             var m = Metadata;
 
@@ -125,6 +138,10 @@ namespace Accountant.Accounts
 
         internal async Task UpdateLogonTime()
         {
+            //Make no model changes while in Endpoint mode.
+            if (Manager.Plugin.Configuration.EndpointMode)
+                return;
+
             long utc_time = TimeUtils.UtcUnixMillis;
 
             await SetMetadata("last_logon", utc_time).ConfigureAwait(false);

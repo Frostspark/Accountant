@@ -18,9 +18,7 @@ namespace Accountant.Events.Handlers.Server
             if (pce.Cancelled || AccountantPlugin.Instance.Configuration.AllowGuests)
                 return;
 
-            //TODO: Keep this updated with Frostspark's command implementation, which is currently case-sensitive.
-
-            //WATCHME: Recently replaced the old short-circuiting loop with this. Observe potential performance drawbacks, if any.
+            //TODO/WATCHME: Keep this updated with Frostspark's command implementation, which is currently case-sensitive.
             if (AccountantPlugin.Instance.Configuration.GuestCommands.Any(x => pce.Command.StartsWith(x)))
                 return;
 
