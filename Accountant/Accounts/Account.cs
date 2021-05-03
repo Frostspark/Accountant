@@ -1,6 +1,6 @@
-﻿using Accountant.Accounts.Metadata;
-using Accountant.Storage;
+﻿using Accountant.Storage;
 
+using SharedUtils.Configuration.Metadata;
 using SharedUtils.Generic;
 using SharedUtils.OOPUtils;
 using SharedUtils.References;
@@ -137,9 +137,9 @@ namespace Accountant.Accounts
 
         internal Dictionary<string, string> SerializeMetadata()
         {
-            JsonSerializerOptions jso = MetadataHelpers.SetupMetadataSerializer(Manager.Plugin);
+            JsonSerializerOptions jso = Manager.Plugin.MetadataRegistry.SetupMetadataSerializer();
 
-            Dictionary<string, string> kvs = new Dictionary<string, string>();
+            Dictionary<string, string> kvs = new();
 
             var m = Metadata;
 
@@ -153,9 +153,9 @@ namespace Accountant.Accounts
 
         internal void DeserializeMetadata(Dictionary<string, string> jsonkvs)
         {
-            JsonSerializerOptions jso = MetadataHelpers.SetupMetadataSerializer(Manager.Plugin);
+            JsonSerializerOptions jso = Manager.Plugin.MetadataRegistry.SetupMetadataSerializer();
 
-            Dictionary<string, object> deserialized = new Dictionary<string, object>();
+            Dictionary<string, object> deserialized = new();
 
             foreach (var x in jsonkvs)
             {

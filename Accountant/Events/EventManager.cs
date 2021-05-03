@@ -1,4 +1,6 @@
 ﻿using Accountant.Events.Handlers.Player;
+using Accountant.Events.Handlers.Server;
+using Accountant.Extensions;
 
 using Frostspark.Server;
 
@@ -17,9 +19,10 @@ namespace Accountant.Events
 
         private PlayerConnectEventHandler ConnectEventHandler = new PlayerConnectEventHandler();
         private PlayerDisconnectEventHandler DisconnectEventHandler = new PlayerDisconnectEventHandler();
-        private PlayerCommandEventHandler CommandEventHandler = new PlayerCommandEventHandler();
+        private ServerPlayerCommandEventHandler CommandEventHandler = new ServerPlayerCommandEventHandler();
         private PlayerUpdateEventHandler UpdateEventHandler = new PlayerUpdateEventHandler();
-        private PlayerEventHandler EventHandler = new PlayerEventHandler();
+        private PlayerTargetedEventHandler TargetedWildcardEventHandler = new PlayerTargetedEventHandler();
+        private PlayerSourcedEventHandler SourcedWildcardEventHandler = new PlayerSourcedEventHandler();
 
         internal EventManager(Server server, AccountantPlugin plugin)
         {
@@ -33,7 +36,8 @@ namespace Accountant.Events
             Server.Events.RegisterHandler(Plugin, DisconnectEventHandler);
             Server.Events.RegisterHandler(Plugin, CommandEventHandler);
             Server.Events.RegisterHandler(Plugin, UpdateEventHandler);
-            Server.Events.RegisterHandler(Plugin, EventHandler);
+            Server.Events.RegisterHandler(Plugin, TargetedWildcardEventHandler);
+            Server.Events.RegisterHandler(Plugin, SourcedWildcardEventHandler);
         }
 
         internal void Deregister()
@@ -42,7 +46,19 @@ namespace Accountant.Events
             Server.Events.UnregisterHandler(Plugin, DisconnectEventHandler);
             Server.Events.UnregisterHandler(Plugin, CommandEventHandler);
             Server.Events.UnregisterHandler(Plugin, UpdateEventHandler);
-            Server.Events.UnregisterHandler(Plugin, EventHandler);
+            Server.Events.UnregisterHandler(Plugin, TargetedWildcardEventHandler);
+            Server.Events.UnregisterHandler(Plugin, SourcedWildcardEventHandler);
+        }
+
+        internal static bool PlayerImmobiliseEventFilter(Frostspark.API.Entities.Player p)
+        {
+            var fsplayer = p as Frostspark.Server.Entities.Player;
+
+            //Don't lock the player up when they're logged in.
+            if (fsplayer.IsLoggedIn())
+                return false;
+
+            return true;
         }
     }
 }

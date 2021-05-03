@@ -1,7 +1,9 @@
-﻿using Accountant.Extensions;
+﻿using Accountant.Events.Definitions.Players;
+using Accountant.Extensions;
 
 using Frostspark.API.Events.Interfaces;
 using Frostspark.API.Events.Players;
+using Frostspark.API.Events.Server;
 
 using System;
 using System.Collections.Generic;
@@ -11,18 +13,17 @@ using System.Threading.Tasks;
 
 namespace Accountant.Events.Handlers.Player
 {
-    public class PlayerEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerEvent>
+    public class PlayerSourcedEventHandler : Frostspark.API.Events.SyncEventHandler<IHasSource<Frostspark.API.Entities.Player>>
     {
-        private static Type[] DontHandle = new[] { typeof(PlayerConnectEvent), typeof(PlayerDisconnectEvent), typeof(PlayerCommandEvent), typeof(PlayerUpdateEvent) };
+        private static Type[] DontHandle = new Type[] { };
 
-        public override void Handle(PlayerEvent obj)
+        public override bool Filter(IHasSource<Frostspark.API.Entities.Player> t)
         {
-            var fsplayer = obj.Player as Frostspark.Server.Entities.Player;
+            return EventManager.PlayerImmobiliseEventFilter(t.Source);
+        }
 
-            //Don't lock the player up when they're logged in.
-            if (fsplayer.IsLoggedIn())
-                return;
-
+        public override void Handle(IHasSource<Frostspark.API.Entities.Player> obj)
+        {
             //If this is an event we're not supposed to handle, don't handle it.
             if (DontHandle.Contains(obj.GetType()))
                 return;
@@ -31,7 +32,6 @@ namespace Accountant.Events.Handlers.Player
             if (obj is ICancellable cancellable)
             {
                 cancellable.Cancelled = true;
-
             }
         }
     }

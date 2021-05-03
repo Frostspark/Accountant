@@ -12,6 +12,7 @@ namespace Accountant.Events.Handlers.Player
 {
     public class PlayerDisconnectEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerDisconnectEvent>
     {
+
         public override void Handle(PlayerDisconnectEvent obj)
         {
             var ply = obj.Player as Frostspark.Server.Entities.Player;

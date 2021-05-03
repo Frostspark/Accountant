@@ -22,7 +22,7 @@ namespace Accountant.Storage
 
         protected AccountManager Manager { get; private set; }
 
-        internal StorageProvider(AccountantPlugin plugin, StorageConfig config)
+        protected StorageProvider(AccountantPlugin plugin, StorageConfig config)
         {
             Plugin = plugin;
         }

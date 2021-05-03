@@ -1,5 +1,4 @@
 ﻿using Accountant.Accounts;
-using Accountant.Accounts.Metadata;
 using Accountant.Configuration.Storage;
 using Dahomey.Json;
 using Dahomey.Json.Attributes;

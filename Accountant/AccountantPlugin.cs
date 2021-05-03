@@ -1,5 +1,4 @@
 ﻿using Accountant.Accounts;
-using Accountant.Accounts.Metadata;
 using Accountant.API;
 using Accountant.Commands;
 using Accountant.Configuration;
@@ -9,6 +8,7 @@ using Accountant.Storage;
 using Frostspark.Server;
 
 using SharedUtils.Configuration;
+using SharedUtils.Configuration.Metadata;
 using SharedUtils.References;
 using SharedUtils.Storage.Exceptions;
 
@@ -70,7 +70,6 @@ namespace Accountant
             Provider.Initialize();
 
             MetadataRegistry = new MetadataHolderRegistry();
-            MetadataRegistry.SetupDefaults();
 
             Accounts = new AccountManager(this, Provider);
 

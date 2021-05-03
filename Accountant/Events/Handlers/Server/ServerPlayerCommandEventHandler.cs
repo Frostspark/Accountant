@@ -1,6 +1,7 @@
 ﻿using Accountant.Extensions;
 
 using Frostspark.API.Events.Players;
+using Frostspark.API.Events.Server;
 
 using System;
 using System.Collections.Generic;
@@ -8,11 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Accountant.Events.Handlers.Player
+namespace Accountant.Events.Handlers.Server
 {
-    public class PlayerCommandEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerCommandEvent>
+    public class ServerPlayerCommandEventHandler : Frostspark.API.Events.SyncEventHandler<ServerPlayerCommandEvent>
     {
-        public override void Handle(PlayerCommandEvent pce)
+        public override void Handle(ServerPlayerCommandEvent pce)
         {
             if (pce.Cancelled || AccountantPlugin.Instance.Configuration.AllowGuests)
                 return;

@@ -11,6 +11,7 @@ namespace Accountant.Events.Handlers.Player
 {
     public class PlayerConnectEventHandler : Frostspark.API.Events.SyncEventHandler<PlayerConnectEvent>
     {
+
         public override void Handle(PlayerConnectEvent obj)
         {
             AccountantSession session = new AccountantSession();
