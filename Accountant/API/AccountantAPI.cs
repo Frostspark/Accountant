@@ -36,5 +36,22 @@ namespace Accountant.API
                 return (AccountLookupResult.InternalError, null);
             }
         }
+
+        public async Task<(AccountLookupResult lookup_result, ObjectReference<Account> reference)> TryGetAccountById(long id)
+        {
+            try
+            {
+                return (AccountLookupResult.Success, await Plugin.Accounts.GetAccountById(id).ConfigureAwait(false));
+            }
+            catch (EntryNotFoundException)
+            {
+                return (AccountLookupResult.NotFound, null);
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError($"Exception processing API call to retrieve account by id (id: {id}): {e}");
+                return (AccountLookupResult.InternalError, null);
+            }
+        }
     }
 }

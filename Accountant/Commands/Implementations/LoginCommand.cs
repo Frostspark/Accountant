@@ -95,7 +95,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            await TryPerformLogon(ply, session, refn);
+            await ply.TryPerformLogon(refn);
         }
 
         [CommandCallback]
@@ -141,7 +141,7 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                await TryPerformLogon(ply, session, refn);
+                await ply.TryPerformLogon(refn);
             }
         }
 
@@ -188,36 +188,9 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                await TryPerformLogon(ply, session, refn);
+                await ply.TryPerformLogon(refn);
             }
 
-        }
-
-        private static async Task TryPerformLogon(Player player, AccountantSession session, ObjectReference<Account> refn)
-        {
-            if (!refn.TryUnpack(out var acc))
-            {
-                //Generic failure.
-                refn.Dispose();
-                return;
-            }
-
-            PlayerLoginEvent ple = new(player, AccountantPlugin.Server, acc);
-
-            await AccountantPlugin.Server.Events.FireEventAsync(ple);
-
-            if (ple.Cancelled)
-            {
-                player.SendErrorMessage($"Account logon denied by another plugin.");
-                refn.Dispose();
-            }
-            else
-            {
-                session.Account = refn;
-                session.IsLoggedIn = true;
-                player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
-                await acc.UpdateLogonTime();
-            }
         }
     }
 }

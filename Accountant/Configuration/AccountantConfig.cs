@@ -24,6 +24,9 @@ namespace Accountant.Configuration
         [JsonPropertyName("logon-nag-cooldown")]
         public double NagCooldown;
 
+        [JsonPropertyName("endpoint-mode")]
+        public bool EndpointMode;
+
         [JsonPropertyName("storage")]
         public StorageConfig Storage;
 
@@ -32,6 +35,7 @@ namespace Accountant.Configuration
             AllowUUIDSignin = false;
             AllowGuests = false;
             NagCooldown = 2.0d;
+            EndpointMode = false;
             Storage = new SQLiteStorageConfig();
             Storage.SetDefaults();
             GuestCommands = new[] { "login", "register", "help" };

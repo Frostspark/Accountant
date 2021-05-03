@@ -3,9 +3,12 @@ using Accountant.Events.Definitions.Players;
 
 using Frostspark.Server.Entities;
 
+using SharedUtils.References;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant.Extensions
 {
@@ -26,7 +29,7 @@ namespace Accountant.Extensions
         /// <param name="player"></param>
         /// <param name="out_of"></param>
         /// <returns>Whether or not the user's authentication status changed.</returns>
-        internal static bool Signout(this Player player, Account out_of = null)
+        public static bool Signout(this Player player, Account out_of = null)
         {
             var session = player.Session();
 
@@ -38,13 +41,8 @@ namespace Accountant.Extensions
             if (accref == null)
                 return false;
 
-            lock (accref)
+            if (accref.TryUnpack(out var acc))
             {
-                if (!accref.Valid)
-                    return false;
-
-                var acc = accref.Object;
-
                 if (out_of == null || out_of == acc)
                 {
                     PlayerLogoutEvent ple = new PlayerLogoutEvent(player, AccountantPlugin.Server);
@@ -70,6 +68,35 @@ namespace Accountant.Extensions
                 return false;
 
             return session.IsLoggedIn;
+        }
+
+        public static async Task TryPerformLogon(this Player player, ObjectReference<Account> refn)
+        {
+            var session = player.Session();
+
+            if (!refn.TryUnpack(out var acc))
+            {
+                //Generic failure.
+                refn.Dispose();
+                return;
+            }
+
+            PlayerLoginEvent ple = new(player, AccountantPlugin.Server, acc);
+
+            await AccountantPlugin.Server.Events.FireEventAsync(ple);
+
+            if (ple.Cancelled)
+            {
+                player.SendErrorMessage($"Account logon denied by another plugin.");
+                refn.Dispose();
+            }
+            else
+            {
+                session.Account = refn;
+                session.IsLoggedIn = true;
+                player.SendSuccessMessage($"Logged in as {acc.Username} successfully.");
+                await acc.UpdateLogonTime();
+            }
         }
     }
 }

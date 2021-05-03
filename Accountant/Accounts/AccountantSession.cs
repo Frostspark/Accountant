@@ -11,8 +11,6 @@ namespace Accountant.Accounts
     {
         internal ObjectReference<Account> Account { get; set; }
 
-        internal Account _account;
-
         internal bool IsLoggedIn { get; set; }
 
         internal int LogonNagCooldown;
@@ -26,19 +24,12 @@ namespace Accountant.Accounts
             if (refn == null)
                 return false;
 
-            lock (refn)
-            {
-                if (!refn.Valid)
-                    return false;
-
-                acc = refn.Duplicate();
-                return true;
-            }
+            return refn.TryDuplicate(out acc);
         }
 
         internal bool TryNag()
         {
-            if(LogonNagCooldown == 0)
+            if (LogonNagCooldown == 0)
             {
                 LogonNagCooldown = (int)Math.Ceiling(AccountantPlugin.Instance.Configuration.NagCooldown * 60);
 

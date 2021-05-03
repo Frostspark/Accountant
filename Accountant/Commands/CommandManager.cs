@@ -23,11 +23,14 @@ namespace Accountant.Commands
         {
             var cmdmgr = Server.Commands;
 
-            cmdmgr.RegisterCommand<LoginCommand>();
-            cmdmgr.RegisterCommand<RegisterCommand>();
-            cmdmgr.RegisterCommand<ChangePasswordCommand>();
-            cmdmgr.RegisterCommand<AccountantCommand>();
-            cmdmgr.RegisterCommand<LogoutCommand>();
+            if (!Plugin.Configuration.EndpointMode)
+            {
+                cmdmgr.RegisterCommand<LoginCommand>();
+                cmdmgr.RegisterCommand<RegisterCommand>();
+                cmdmgr.RegisterCommand<ChangePasswordCommand>();
+                cmdmgr.RegisterCommand<AccountantCommand>();
+                cmdmgr.RegisterCommand<LogoutCommand>();
+            }
 
         }
 
@@ -35,11 +38,14 @@ namespace Accountant.Commands
         {
             var cmdmgr = Server.Commands;
 
-            cmdmgr.DeregisterCommand<LoginCommand>();
-            cmdmgr.DeregisterCommand<RegisterCommand>();
-            cmdmgr.DeregisterCommand<ChangePasswordCommand>();
-            cmdmgr.DeregisterCommand<AccountantCommand>();
-            cmdmgr.DeregisterCommand<LogoutCommand>();
+            if (!Plugin.Configuration.EndpointMode)
+            {
+                cmdmgr.DeregisterCommand<LoginCommand>();
+                cmdmgr.DeregisterCommand<RegisterCommand>();
+                cmdmgr.DeregisterCommand<ChangePasswordCommand>();
+                cmdmgr.DeregisterCommand<AccountantCommand>();
+                cmdmgr.DeregisterCommand<LogoutCommand>();
+            }
         }
     }
 }

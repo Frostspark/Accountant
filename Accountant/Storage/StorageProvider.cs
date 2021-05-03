@@ -147,5 +147,15 @@ namespace Accountant.Storage
                 return new SQLiteStorageProvider(AccountantPlugin.Instance, c);
             });
         }
+
+        protected Account CreateAccount(long id)
+        {
+            return new Account(Manager, this, id);
+        }
+
+        protected void ReadMetadata(Account account, Dictionary<string, string> kvs)
+        {
+            account.DeserializeMetadata(kvs);
+        }
     }
 }
