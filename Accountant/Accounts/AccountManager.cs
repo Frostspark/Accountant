@@ -22,19 +22,18 @@ namespace Accountant.Accounts
 {
     public class AccountManager : AsyncSlimManager<long, Account>
     {
-        public StorageProvider Provider { get; private set; }
+        public StorageProvider Provider => Plugin.Provider;
 
         public AccountantPlugin Plugin { get; private set; }
 
-        internal AccountManager(AccountantPlugin plugin, StorageProvider provider)
+        internal AccountManager(AccountantPlugin plugin)
         {
             Plugin = plugin;
-            Provider = provider;
         }
 
         public async Task<(AccountCreateResult result, ObjectReference<Account> refn)> CreateAccount(string username, string password)
         {
-            Account account = new Account(this, Provider, -1)
+            Account account = new Account(this, -1)
             {
                 Username = username,
                 Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password)

@@ -15,7 +15,7 @@ namespace Accountant.Events.Handlers.Player
 {
     public class PlayerSourcedEventHandler : Frostspark.API.Events.SyncEventHandler<IHasSource<Frostspark.API.Entities.Player>>
     {
-        private static Type[] DontHandle = new Type[] { };
+        private static Type[] DontHandle = new Type[] { typeof(ServerPlayerCommandEvent) };
 
         public override bool Filter(IHasSource<Frostspark.API.Entities.Player> t)
         {

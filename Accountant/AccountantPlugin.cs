@@ -66,16 +66,21 @@ namespace Accountant
 
             Configuration = ConfigManager.LoadConfig<AccountantConfig>(Path.Combine(DataFolder, "config.json"), new ConfigSettings() { PolymorphicTypes = types, Indented = true });
 
-            Provider = StorageProvider.SetupStorageProvider(Configuration.Storage);
-            Provider.Initialize();
+            SetStorageProvider(StorageProvider.SetupFromConfig(Configuration.Storage));
 
             MetadataRegistry = new MetadataHolderRegistry();
 
-            Accounts = new AccountManager(this, Provider);
+            Accounts = new AccountManager(this);
 
             Provider.SetManager(Accounts);
 
             API = new AccountantAPI(this);
+        }
+
+        public void SetStorageProvider(StorageProvider provider)
+        {
+            Provider = provider;
+            provider.Initialize();
         }
 
         public override void Unload()

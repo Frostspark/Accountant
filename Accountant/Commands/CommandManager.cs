@@ -23,6 +23,8 @@ namespace Accountant.Commands
         {
             var cmdmgr = Server.Commands;
 
+            Server.Log.LogDebug($"[Accountant] EndpointMode: {Plugin.Configuration.EndpointMode}");
+
             if (!Plugin.Configuration.EndpointMode)
             {
                 cmdmgr.RegisterCommand<LoginCommand>();

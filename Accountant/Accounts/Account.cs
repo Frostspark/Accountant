@@ -24,22 +24,21 @@ namespace Accountant.Accounts
     public class Account : IIdentifiable<long>
     {
         private readonly AccountManager Manager;
-        private readonly StorageProvider Provider;
+        private StorageProvider Provider => Manager.Provider;
 
         internal const string AutoLoginMetaKey = "auto_login_uuids";
 
-        internal Account(AccountManager manager, StorageProvider provider, long id)
+        internal Account(AccountManager manager, long id)
         {
             Manager = manager;
-            Provider = provider;
             Identifier = id;
         }
 
         public long Identifier { get; internal set; }
 
-        public string Username { get; internal set; }
+        public string Username { get; set; }
 
-        public string Password { get; internal set; }
+        public string Password { get; set; }
 
 
         private ReadOnlyDictionary<string, object> Metadata = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());

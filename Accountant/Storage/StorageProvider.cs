@@ -122,7 +122,7 @@ namespace Accountant.Storage
             }
         }
 
-        internal static StorageProvider SetupStorageProvider(StorageConfig config)
+        internal static StorageProvider SetupFromConfig(StorageConfig config)
         {
             var type = config.GetType();
 
@@ -150,7 +150,7 @@ namespace Accountant.Storage
 
         protected Account CreateAccount(long id)
         {
-            return new Account(Manager, this, id);
+            return new Account(Manager, id);
         }
 
         protected void ReadMetadata(Account account, Dictionary<string, string> kvs)
