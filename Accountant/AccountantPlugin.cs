@@ -3,6 +3,7 @@ using Accountant.API;
 using Accountant.Commands;
 using Accountant.Configuration;
 using Accountant.Events;
+using Accountant.Events.Definitions.Storage;
 using Accountant.Storage;
 
 using Frostspark.Server;
@@ -66,7 +67,7 @@ namespace Accountant
 
             Configuration = ConfigManager.LoadConfig<AccountantConfig>(Path.Combine(DataFolder, "config.json"), new ConfigSettings() { PolymorphicTypes = types, Indented = true });
 
-            SetStorageProvider(StorageProvider.SetupFromConfig(Configuration.Storage));
+            InitialiseStorage();
 
             MetadataRegistry = new MetadataHolderRegistry();
 
@@ -77,7 +78,23 @@ namespace Accountant
             API = new AccountantAPI(this);
         }
 
-        public void SetStorageProvider(StorageProvider provider)
+        private void InitialiseStorage()
+        {
+            StorageProviderSetupEvent spse = new(Server);
+
+            Server.Events.FireEvent(spse);
+
+            if (spse.Provider != null)
+            {
+                SetStorageProvider(spse.Provider);
+            }
+            else
+            {
+                SetStorageProvider(StorageProvider.SetupFromConfig(Configuration.Storage));
+            }
+        }
+
+        private void SetStorageProvider(StorageProvider provider)
         {
             Provider = provider;
             provider.Initialize();
