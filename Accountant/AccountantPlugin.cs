@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Accountant
 {
@@ -45,19 +46,21 @@ namespace Accountant
 
         public override string Author => "quake1337";
 
-        public override void Disable()
+        public override Task Disable()
         {
             Commands.Deregister();
             Events.Deregister();
+            return Task.CompletedTask;
         }
 
-        public override void Enable()
+        public override Task Enable()
         {
             Commands.Register();
             Events.Register();
+            return Task.CompletedTask;
         }
 
-        public override void Load()
+        public override Task Load()
         {
             Commands = new CommandManager(Server, this);
             Events = new EventManager(Server, this);
@@ -76,6 +79,8 @@ namespace Accountant
             Provider.SetManager(Accounts);
 
             API = new AccountantAPI(this);
+
+            return Task.CompletedTask;
         }
 
         private void InitialiseStorage()
@@ -100,12 +105,14 @@ namespace Accountant
             provider.Initialize();
         }
 
-        public override void Unload()
+        public override Task Unload()
         {
             Commands = null;
             Configuration = null;
             Provider = null;
             Accounts = null;
+
+            return Task.CompletedTask;
         }
     }
 }
