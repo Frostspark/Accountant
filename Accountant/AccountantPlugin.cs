@@ -55,6 +55,9 @@ namespace Accountant
 
         public override Task Enable()
         {
+            InitialiseStorage();
+            Provider.SetManager(Accounts);
+
             Commands.Register();
             Events.Register();
             return Task.CompletedTask;
@@ -70,13 +73,9 @@ namespace Accountant
 
             Configuration = ConfigManager.LoadConfig<AccountantConfig>(Path.Combine(DataFolder, "config.json"), new ConfigSettings() { PolymorphicTypes = types, Indented = true });
 
-            InitialiseStorage();
-
             MetadataRegistry = new MetadataHolderRegistry();
 
             Accounts = new AccountManager(this);
-
-            Provider.SetManager(Accounts);
 
             API = new AccountantAPI(this);
 
