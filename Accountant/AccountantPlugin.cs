@@ -10,7 +10,6 @@ using Frostspark.Server;
 
 using SharedUtils.Configuration;
 using SharedUtils.Configuration.Metadata;
-using SharedUtils.References;
 using SharedUtils.Storage.Exceptions;
 
 using System;

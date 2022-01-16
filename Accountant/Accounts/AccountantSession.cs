@@ -1,4 +1,4 @@
-﻿using SharedUtils.References;
+﻿using SharedUtils.Synchronisation.References;
 
 using System;
 using System.Collections.Generic;

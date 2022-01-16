@@ -2,9 +2,9 @@
 
 using SharedUtils.Configuration.Metadata;
 using SharedUtils.Generic;
-using SharedUtils.OOPUtils;
-using SharedUtils.References;
 using SharedUtils.Storage;
+using SharedUtils.Synchronisation.Interfaces;
+using SharedUtils.Synchronisation.References;
 
 using System;
 using System.Collections.Generic;

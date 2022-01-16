@@ -21,14 +21,11 @@
     <Reference Include="SharedUtils.Generic">
       <HintPath>..\..\..\..\.references\SharedUtils.Generic.dll</HintPath>
     </Reference>
-    <Reference Include="SharedUtils.OOPUtils">
-      <HintPath>..\..\..\..\.references\SharedUtils.OOPUtils.dll</HintPath>
-    </Reference>
-    <Reference Include="SharedUtils.References">
-      <HintPath>..\..\..\..\.references\SharedUtils.References.dll</HintPath>
-    </Reference>
     <Reference Include="SharedUtils.Storage">
       <HintPath>..\..\..\..\.references\SharedUtils.Storage.dll</HintPath>
+    </Reference>
+    <Reference Include="SharedUtils.Synchronisation">
+      <HintPath>..\..\..\..\.references\SharedUtils.Synchronisation.dll</HintPath>
     </Reference>
   </ItemGroup>
 

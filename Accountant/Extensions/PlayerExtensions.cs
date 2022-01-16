@@ -3,11 +3,8 @@ using Accountant.Events.Definitions.Players;
 
 using Frostspark.Server.Entities;
 
-using SharedUtils.References;
+using SharedUtils.Synchronisation.References;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Accountant.Extensions

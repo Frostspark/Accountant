@@ -1,5 +1,6 @@
-﻿using SharedUtils.OOPUtils;
-using SharedUtils.References;
+﻿using SharedUtils.Synchronisation;
+using SharedUtils.Synchronisation.Interfaces;
+using SharedUtils.Synchronisation.References;
 
 using System;
 using System.Collections.Concurrent;
@@ -9,9 +10,9 @@ using System.Text;
 
 namespace Accountant.Accounts
 {
-    public abstract class Manager<ID, Obj> where Obj : class, IIdentifiable<ID>
+    public abstract class Manager<Id, Obj> where Obj : class, IIdentifiable<Id>
     {
-        protected ConcurrentDictionary<ID, Obj> Objects;
+        protected ConcurrentDictionary<Id, Obj> Objects;
 
         protected ReferenceManager<Obj> References;
 
@@ -19,7 +20,7 @@ namespace Accountant.Accounts
 
         protected Manager()
         {
-            Objects = new ConcurrentDictionary<ID, Obj>();
+            Objects = new ConcurrentDictionary<Id, Obj>();
             Synchroniser = new ObjectSynchroniser<Obj>();
             References = new ReferenceManager<Obj>(Synchroniser)
             {
@@ -109,7 +110,7 @@ namespace Accountant.Accounts
         /// <param name="identifier"></param>
         /// <param name="factory"></param>
         /// <returns></returns>
-        protected ObjectReference<Obj> AddOrGet(ID identifier, Func<Obj> factory)
+        protected ObjectReference<Obj> AddOrGet(Id identifier, Func<Obj> factory)
         {
             ObjectReference<Obj> reference = null;
 

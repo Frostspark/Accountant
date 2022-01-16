@@ -2,10 +2,7 @@
 using Accountant.Accounts;
 using Accountant.Accounts.Enums;
 using Accountant.Commands.Utilities;
-using Accountant.Events.Definitions.Players;
 using Accountant.Extensions;
-
-using BCrypt.Net;
 
 using Frostspark.Server.Commands.Assertions;
 using Frostspark.Server.Commands.Attributes;
@@ -13,13 +10,8 @@ using Frostspark.Server.Entities;
 
 using SharedUtils.Commands.Attributes;
 using SharedUtils.Commands.Commands;
-using SharedUtils.References;
-using SharedUtils.Storage.Exceptions;
 
 using System;
-using System.Collections.Generic;
-using System.Security.Authentication.ExtendedProtection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations

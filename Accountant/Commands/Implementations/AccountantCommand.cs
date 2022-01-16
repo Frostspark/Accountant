@@ -8,7 +8,6 @@ using Frostspark.Server.Entities;
 
 using SharedUtils.Commands.Attributes;
 using SharedUtils.Commands.Commands;
-using SharedUtils.References;
 using SharedUtils.Storage.Exceptions;
 
 using System;
