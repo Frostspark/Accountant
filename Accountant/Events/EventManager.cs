@@ -54,8 +54,8 @@ namespace Accountant.Events
         {
             var fsplayer = p as Frostspark.Server.Entities.Player;
 
-            //Don't lock the player up when they're logged in.
-            if (fsplayer.IsLoggedIn())
+            //Don't lock the player up when they're logged in, or when guests are allowed.
+            if (fsplayer.IsLoggedIn() || AccountantPlugin.Instance.Configuration.AllowGuests)
                 return false;
 
             return true;

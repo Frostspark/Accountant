@@ -24,6 +24,8 @@ namespace Accountant.Events.Handlers.Player
 
         public override void Handle(IHasTarget<Frostspark.API.Entities.Player> obj)
         {
+
+
             var fsplayer = obj.Target as Frostspark.Server.Entities.Player;
 
             //Don't lock the player up when they're logged in.

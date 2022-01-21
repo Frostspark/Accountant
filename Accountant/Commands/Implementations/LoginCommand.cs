@@ -153,7 +153,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            var (result, refn) = await AccountUtilities.TryFindAccount(ply.Name);
+            var (result, refn) = await AccountUtilities.TryFindAccount(username);
 
             if (result != FindAccountResult.Found)
             {
