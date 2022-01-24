@@ -32,7 +32,7 @@ namespace Accountant.API
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Exception processing API call to retrieve account by name (name: {name}): {e}");
+                Plugin.Log.LogError("API", $"Exception processing API call to retrieve account by name (name: {name}): {e}");
                 return (AccountLookupResult.InternalError, null);
             }
         }
@@ -49,7 +49,7 @@ namespace Accountant.API
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Exception processing API call to retrieve account by id (id: {id}): {e}");
+                Plugin.Log.LogError("API", $"Exception processing API call to retrieve account by id (id: {id}): {e}");
                 return (AccountLookupResult.InternalError, null);
             }
         }

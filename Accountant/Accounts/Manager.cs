@@ -137,12 +137,12 @@ namespace Accountant.Accounts
 
         private void FirstReference(Obj obj)
         {
-            AccountantPlugin.Instance.Log.LogDebug($"Account {obj.Identifier} pinned.");
+            AccountantPlugin.Instance.Log.LogDebug("Refs", $"Account {obj.Identifier} pinned.");
         }
 
         private void CleanupObject(Obj obj)
         {
-            AccountantPlugin.Instance.Log.LogDebug($"Account {obj.Identifier} unloading...");
+            AccountantPlugin.Instance.Log.LogDebug("Refs", $"Account {obj.Identifier} unloading...");
             TryRemove(obj);
         }
 

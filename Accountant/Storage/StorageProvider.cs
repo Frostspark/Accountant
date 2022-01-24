@@ -130,7 +130,7 @@ namespace Accountant.Storage
             {
                 if (!Providers.TryGetValue(type, out var configurator))
                 {
-                    AccountantPlugin.Instance.Log.LogError($"Configuration type {type.Name} isn't mapped to a storage provider.");
+                    AccountantPlugin.Instance.Log.LogError("Config", $"Configuration type {type.Name} isn't mapped to a storage provider.");
                     throw new InvalidOperationException("Unknown storage provider.");
                 }
                 else

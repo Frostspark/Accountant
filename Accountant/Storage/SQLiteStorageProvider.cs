@@ -56,7 +56,7 @@ namespace Accountant.Storage
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Deleting account id {acc.Identifier} (uname {acc.Username}) failed: {e}");
+                Plugin.Log.LogError("I/O", $"Deleting account id {acc.Identifier} (uname {acc.Username}) failed: {e}");
                 return new StorageResult(e);
             }
             finally
@@ -105,7 +105,7 @@ namespace Accountant.Storage
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Loading account id {id} failed: {e}");
+                Plugin.Log.LogError("I/O", $"Loading account id {id} failed: {e}");
                 return new StorageResult(e);
             }
             finally
@@ -150,7 +150,7 @@ namespace Accountant.Storage
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Loading account name {name} failed: {e}");
+                Plugin.Log.LogError("I/O", $"Loading account name {name} failed: {e}");
                 return new StorageResult(e);
             }
             finally
@@ -180,7 +180,7 @@ namespace Accountant.Storage
                 }
                 catch (Exception e)
                 {
-                    Plugin.Log.LogError($"Failed to load account metadata for user {acc.Identifier} (uname {acc.Username}):\n{e}");
+                    Plugin.Log.LogError("I/O", $"Failed to load account metadata for user {acc.Identifier} (uname {acc.Username}):\n{e}");
                 }
 
             }, new Dictionary<string, object> { { "id", acc.Identifier } }).ConfigureAwait(false);
@@ -212,7 +212,7 @@ namespace Accountant.Storage
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Retrieving autologin entries for uuid {uuid} failed: {e}");
+                Plugin.Log.LogError("I/O", $"Retrieving autologin entries for uuid {uuid} failed: {e}");
                 return new StorageResult(e);
             }
             finally
@@ -237,13 +237,13 @@ namespace Accountant.Storage
             {
                 await conn.OpenAsync().ConfigureAwait(false);
 
-                Plugin.Log.LogSuccess($"Storage provider {nameof(SQLiteStorageProvider)} initialised successfully.");
+                Plugin.Log.LogSuccess("I/O",$"Storage provider {nameof(SQLiteStorageProvider)} initialised successfully.");
 
                 await InitializeTables(conn).ConfigureAwait(false);
             }
             catch (SqliteException exc)
             {
-                Plugin.Log.LogError($"Failed to initialize Accountant: {nameof(SQLiteStorageProvider)} threw an exception:\n{exc}");
+                Plugin.Log.LogError("I/O", $"Failed to initialize Accountant: {nameof(SQLiteStorageProvider)} threw an exception:\n{exc}");
                 return new StorageResult(exc);
             }
             finally
@@ -323,7 +323,7 @@ namespace Accountant.Storage
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError($"Saving account {account.Identifier} (uname {account.Username}) failed: {e}");
+                Plugin.Log.LogError("I/O", $"Saving account {account.Identifier} (uname {account.Username}) failed: {e}");
                 return new StorageResult(e);
             }
             finally 

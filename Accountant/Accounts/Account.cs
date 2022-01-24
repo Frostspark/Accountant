@@ -118,11 +118,11 @@ namespace Accountant.Accounts
                 }
                 else if (val is MetadataHolder)
                 {
-                    Manager.Plugin.Log.LogWarning($"Call to TryRemoveMetadata specified incorrect generic type to provide out value to, returning default! (holder type is {val.GetType().Name}, caller provided {typeof(MetadataHolder<T>).Name})");
+                    Manager.Plugin.Log.LogWarning("Accounts", $"Call to TryRemoveMetadata specified incorrect generic type to provide out value to, returning default! (holder type is {val.GetType().Name}, caller provided {typeof(MetadataHolder<T>).Name})");
                 }
                 else
                 {
-                    Manager.Plugin.Log.LogWarning($"Metadata under key {t} for account {this.Identifier} was not packed inside a MetadataHolder, returning default.");
+                    Manager.Plugin.Log.LogWarning("Accounts", $"Metadata under key {t} for account {this.Identifier} was not packed inside a MetadataHolder, returning default.");
                 }
 
                 Metadata = m2.ToReadOnly();
