@@ -87,7 +87,7 @@ namespace Accountant.Commands.Implementations
                 return;
             }
 
-            await ply.TryPerformLogon(refn);
+            await ply.TrySignIn(refn);
         }
 
         [CommandCallback]
@@ -133,7 +133,7 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                await ply.TryPerformLogon(refn);
+                await ply.TrySignIn(refn);
             }
         }
 
@@ -180,7 +180,7 @@ namespace Accountant.Commands.Implementations
             }
             else
             {
-                await ply.TryPerformLogon(refn);
+                await ply.TrySignIn(refn);
             }
 
         }

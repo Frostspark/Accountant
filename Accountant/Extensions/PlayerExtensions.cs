@@ -26,7 +26,7 @@ namespace Accountant.Extensions
         /// <param name="player"></param>
         /// <param name="out_of"></param>
         /// <returns>Whether or not the user's authentication status changed.</returns>
-        public static bool Signout(this Player player, Account out_of = null)
+        public static bool TrySignOut(this Player player, Account out_of = null)
         {
             var session = player.Session();
 
@@ -50,6 +50,8 @@ namespace Accountant.Extensions
                     session.Account = null;
                     session.IsLoggedIn = false;
 
+                    player.SendSuccessMessage($"Logged out from {acc.Username} successfully.");
+
                     return true;
                 }
             }
@@ -67,7 +69,7 @@ namespace Accountant.Extensions
             return session.IsLoggedIn;
         }
 
-        public static async Task TryPerformLogon(this Player player, ObjectReference<Account> refn)
+        public static async Task TrySignIn(this Player player, ObjectReference<Account> refn)
         {
             var session = player.Session();
 

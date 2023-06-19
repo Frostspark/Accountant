@@ -31,11 +31,7 @@ namespace Accountant.Commands.Implementations
             if (!SessionUtilities.AcquireSession(ply, out var session))
                 return;
 
-            if (ply.Signout())
-            {
-                ply.SendSuccessMessage("You have been succesfully logged out.");
-            }
-            else
+            if (!ply.TrySignOut())
             {
                 ply.SendErrorMessage("You are not logged in!");
             }

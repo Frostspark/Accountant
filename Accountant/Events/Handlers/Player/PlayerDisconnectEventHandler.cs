@@ -17,7 +17,7 @@ namespace Accountant.Events.Handlers.Player
         {
             var ply = obj.Player as Frostspark.Server.Entities.Player;
 
-            ply.Signout();
+            ply.TrySignOut();
         }
     }
 }

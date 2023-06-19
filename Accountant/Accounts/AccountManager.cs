@@ -91,7 +91,7 @@ namespace Accountant.Accounts
             {
                 AccountantPlugin.Server.Players.ForEach(ply =>
                 {
-                    if (ply.Signout(refn.Object))
+                    if (ply.TrySignOut(refn.Object))
                     {
                         ply.SendInfoMessage("You have been logged out because your account has been deleted.");
                     }
