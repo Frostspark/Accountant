@@ -17,12 +17,12 @@ using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
-    [CommandName("accountant")]
+    [Command("accountant")]
     [CommandDescription("Plugin and account management commands for server administrators")]
     [CommandPermission("accountant.commands.accountant")]
     public class AccountantCommand : CommandWrapper<CommandSender>
     {
-        [SubCommand("remove")]
+        [Command("remove")]
         [CommandPermission("accountant.commands.accountant.remove")]
         public async Task DeleteAccount(string username)
         {

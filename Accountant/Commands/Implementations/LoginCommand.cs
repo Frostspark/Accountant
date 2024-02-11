@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
-    [CommandName("login")]
+    [Command("login")]
     [CommandDescription("Signs you into an existing account.")]
     [CommandPermission("accountant.commands.login")]
     [NoParameterLogging]

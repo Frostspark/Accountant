@@ -42,12 +42,12 @@ namespace Accountant.Events
 
         internal void Deregister()
         {
-            Server.Events.UnregisterHandler(Plugin, ConnectEventHandler);
-            Server.Events.UnregisterHandler(Plugin, DisconnectEventHandler);
-            Server.Events.UnregisterHandler(Plugin, CommandEventHandler);
-            Server.Events.UnregisterHandler(Plugin, UpdateEventHandler);
-            Server.Events.UnregisterHandler(Plugin, TargetedWildcardEventHandler);
-            Server.Events.UnregisterHandler(Plugin, SourcedWildcardEventHandler);
+            Server.Events.DeregisterHandler(Plugin, ConnectEventHandler);
+            Server.Events.DeregisterHandler(Plugin, DisconnectEventHandler);
+            Server.Events.DeregisterHandler(Plugin, CommandEventHandler);
+            Server.Events.DeregisterHandler(Plugin, UpdateEventHandler);
+            Server.Events.DeregisterHandler(Plugin, TargetedWildcardEventHandler);
+            Server.Events.DeregisterHandler(Plugin, SourcedWildcardEventHandler);
         }
 
         internal static bool PlayerImmobiliseEventFilter(Frostspark.API.Entities.Player p)

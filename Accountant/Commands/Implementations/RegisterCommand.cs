@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
-    [CommandName("register")]
+    [Command("register")]
     [CommandDescription("Registers a new account with a given name.")]
     [CommandPermission("accountant.commands.register")]
     [NoParameterLogging]

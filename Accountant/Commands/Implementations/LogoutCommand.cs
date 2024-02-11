@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Accountant.Commands.Implementations
 {
-    [CommandName("logout")]
+    [Command("logout")]
     [CommandDescription("Signs you out of the account you're logged into.")]
     [CommandPermission("accountant.commands.logout")]
     public class LogoutCommand : CommandWrapper<CommandSender>
